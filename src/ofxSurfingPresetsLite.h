@@ -16,7 +16,7 @@
 
 #include "ofMain.h"
 
-#include "ofxSurfingHelpers.h"
+#include "ofxSurfingHelpersLite.h"
 #include "ofxSurfingImGui.h"
 #include "imgui_stdlib.h"
 //#include "surfingParamsRandom.h"
@@ -114,12 +114,12 @@ private:
 
     void exit()
     {
-        ofxSurfingHelpers::CheckFolder(path_Global);
+        ofxSurfing::checkFolderOrCreate(path_Global);
 
         string s;
         if (path_Global == "") s = path_Settings;
         else s = path_Global + "/" + path_Settings;
-        ofxSurfingHelpers::saveGroup(params, s);
+        ofxSurfing::saveGroup(params, s);
 
         doSave();
     }
@@ -610,7 +610,7 @@ public:
 
     ofParameter<int> index{"Index", 0, 0, 0};
 
-    ofParameter<int> amountButtonsPerRowClicker{"Row", 1, 1, 4};
+    ofParameter<int> amountButtonsPerRowClicker{"Row Sz", 1, 1, 4};
 
 	ofParameter<bool> bFloating { "Floating", true };
 
@@ -660,7 +660,7 @@ private:
         string s;
         if (path_Global == "") s = path_Settings;
         else s = path_Global + "/" + path_Settings;
-        ofxSurfingHelpers::loadGroup(params, s);
+        ofxSurfing::loadGroup(params, s);
 
         //index = index;
 
@@ -710,10 +710,10 @@ private:
 
         if (bDoingNew) bDoingNew = false;
 
-        ofxSurfingHelpers::CheckFolder(pathPresets);
+        ofxSurfing::checkFolderOrCreate(pathPresets);
 
         // Save Settings
-        ofxSurfingHelpers::saveGroup(params_Preset, pathPresets + "/" + filename + ".json");
+        ofxSurfing::saveGroup(params_Preset, pathPresets + "/" + filename + ".json");
     }
 
     void doLoad()
@@ -723,7 +723,7 @@ private:
         if (bDoingNew) bDoingNew = false;
 
         // Load Settings
-        ofxSurfingHelpers::loadGroup(params_Preset, pathPresets + "/" + filename + ".json");
+        ofxSurfing::loadGroup(params_Preset, pathPresets + "/" + filename + ".json");
     }
 
 
@@ -731,7 +731,7 @@ private:
     //{
     //	ofLogNotice("ofxSurfingPresetsLite") << (__FUNCTION__);
     //	// Load Settings
-    //	ofxSurfingHelpers::loadGroup(params_Preset, pathPresets + "/" + filename + ".json");
+    //	ofxSurfing::loadGroup(params_Preset, pathPresets + "/" + filename + ".json");
     //}
 
     //void doResetParams()
@@ -767,7 +767,7 @@ public:
     void setPathGlobal(std::string path)
     {
         path_Global = path;
-        ofxSurfingHelpers::CheckFolder(path_Global);
+        ofxSurfing::checkFolderOrCreate(path_Global);
     }
 
 private:
@@ -777,7 +777,7 @@ public:
     void setPath(string p)
     {
         pathPresets = p + "/Presets";
-        ofxSurfingHelpers::CheckFolder(pathPresets);
+        ofxSurfing::checkFolderOrCreate(pathPresets);
     }
 
     void setFilename(string p)
