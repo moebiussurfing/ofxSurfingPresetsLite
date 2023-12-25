@@ -1,14 +1,18 @@
 ## Overview
 
-A simple class to handle `ofParameter` presets.  
+A simple class to handle `ofParameter` presets with some helpers.  
 
 This class is separated from [ofxSurfingHelpers](https://github.com/moebiussurfing/ofxSurfingHelpers).  
 
 ## Screenshots
-![](Capture.PNG)
+![](1_Example_Presets_ofxGui/Capture.PNG)
+![](2_Example_Presets_ImGui/Capture.PNG)
 
 ## Required
 - ofxSurfingHelpersLite
 - ofxGui
-- ofxImGui
 - ofxSurfingImGui
+- ofxImGui
+
+### TODO
+- Allow nested groups.
