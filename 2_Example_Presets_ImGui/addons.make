@@ -1,3 +1,5 @@
+ofxGui
 ofxImGui
 ofxSurfingHelpersLite
 ofxSurfingImGui
+ofxSurfingPresetsLite

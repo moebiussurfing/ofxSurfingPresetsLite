@@ -80,19 +80,21 @@ public:
 
 private:
 	string pathSettings = "Presets_Settings.json";
+	bool bDoneStartup = false;
 
 	//----
 
-private:
+protected:
 	vector<char> keyCommandsChars;
 	vector<ofColor> colors;
 	bool bGuiColorized = false;
-	bool bDoneStartup = false;
-	bool bKeyModCtrl = false;
-	bool bKeyModAlt = false;
 
 public:
 	void setGuiColorized(bool b) { bGuiColorized = b; }
+
+protected:
+	bool bKeyModCtrl = false;
+	bool bKeyModAlt = false;
 
 	//----
 
@@ -108,9 +110,9 @@ private:
 
 public:
 	ofParameter<bool> bGuiClicker { "CLICKER", false };
-	ofParameter<bool> bGuiFloating { "Floating", true };
+	ofParameter<bool> bGuiFloating { "FLOATING", true };
 	ofParameter<bool> bGui { "PRESETS", true };
-	ofParameter<int> guiAmountRow { "Row Amount", 1, 1, 4 };
+	ofParameter<int> guiRowAmount { "Row", 1, 1, 6 };
 
 	void setToggleGuiVisible() { bGui = !bGui; }
 	void setGuiVisible(bool b = true) { bGui = b; }
@@ -122,20 +124,21 @@ public:
 	ofParameter<void> vPrevious { "<" };
 	ofParameter<void> vNext { ">" };
 
-private:
-	ofParameter<void> vRename { "Rename" };
-	ofParameter<void> vScanKit { "Scan" };
+protected:
+	ofParameter<void> vRename { "Rename" }; //TODO
+	ofParameter<void> vNew { "New" };
 	ofParameter<void> vDelete { "Delete" };
 	ofParameter<void> vSave { "Save" };
 	ofParameter<void> vLoad { "Load" };
-	ofParameter<void> vNew { "New" };
-	ofParameter<void> vClear { "Clear" };
-	ofParameter<void> vPopulate { "Populate" };
-	ofParameter<void> vPopulateRandom { "Populate Random" };
+	ofParameter<void> vScanKit { "Scan" };
+	ofParameter<void> vClearKit { "Clear" };
+	ofParameter<void> vPopulateKit { "Populate" };
+	ofParameter<void> vPopulateRandomKit { "Populate Random" };
 	ofParameter<bool> bAutoSave { "AutoSave", true }; // edit mode
+
 	ofParameter<bool> bGuiExpand { "Expand", false };
 	ofParameter<bool> bKeys { "Keys", true };
-	ofParameter<bool> bHelp{ "Help", true };
+	ofParameter<bool> bHelp { "Help", true };
 
 private:
 	void setup() {
@@ -175,15 +178,15 @@ private:
 		paramsManager.add(vRename);
 		params.add(paramsManager);
 
-		paramsKit.add(vClear);
-		paramsKit.add(vPopulate);
-		paramsKit.add(vPopulateRandom);
+		paramsKit.add(vClearKit);
 		paramsKit.add(vScanKit);
+		paramsKit.add(vPopulateKit);
+		paramsKit.add(vPopulateRandomKit);
 		params.add(paramsKit);
 
 		paramsInternal.add(bGuiFloating);
 		paramsInternal.add(bGuiExpand);
-		paramsInternal.add(guiAmountRow);
+		paramsInternal.add(guiRowAmount);
 		paramsInternal.add(bGui);
 		paramsInternal.add(bHelp);
 		paramsInternal.add(bKeys);
@@ -247,14 +250,14 @@ public:
 		if (!bHelp) return;
 
 		string s = "";
-
 		s += "PRESETS\nMANAGER\n";
 		s += "\n";
-		s += "LEFT/RIGHT        Browse\n";
-		s += "BACKSPACE         Random\n";
-		s += "Ctrl + BACKSPACE  Reset\n";
-		s += "RETURN            New Add\n";
-		s += "Ctrl + RETURN     New Name\n";
+		s += "LEFT/RIGHT  Browse\n";
+		s += "UP/DOWN\n";
+		s += "BACKSPACE   Random\n";
+		s += "+Ctrl       Reset\n";
+		s += "RETURN      New add\n";
+		s += "+Ctrl       New name\n";
 		s += "\n";
 		s += "Preset:\n";
 		s += ofToString(getPresetIndex()) + "/" + ofToString(getPresetIndexLast()) + "\n";
@@ -274,7 +277,7 @@ public:
 
 private:
 	void doSave() {
-		//save the previously settled name
+		// note that saves the previously settled file name when picking the index!
 		ofLogNotice("ofxSurfingPresetsLite") << "doSave(): " << filename;
 
 		if (bDoingNew) bDoingNew = false;
@@ -293,6 +296,7 @@ private:
 		// Load Settings
 		ofxSurfing::loadGroup(paramsPreset, pathPresets + "/" + filename + ".json");
 
+		//TODO
 		//indexName.set(filename);
 	}
 
@@ -307,6 +311,9 @@ public:
 		if (isGroup) {
 			paramsPreset = group;
 		}
+
+		name = paramsPreset.getName();
+		setName("PRESETS " + name);
 
 		string s = paramsPreset.getName();
 		s += ofToString("_Presets.json");
@@ -339,7 +346,8 @@ public:
 		if (index > index.getMin())
 			index--;
 		else if (index == index.getMin())
-			index = index.getMax();
+			index = index.getMin();
+		//index = index.getMax();
 	}
 
 	void doLoadNext() {
@@ -349,7 +357,8 @@ public:
 		if (index < index.getMax())
 			index++;
 		else if (index == index.getMax())
-			index = index.getMin();
+			index = index.getMax();
+		//index = index.getMin();
 	}
 
 private:
@@ -520,14 +529,7 @@ private:
 		}
 
 		else if (name == vDelete.getName()) {
-			if (filenames.size() == 0) return;
-
-			ofFile::removeFile(pathPresets + "/" + filename + ".json");
-			doRefreshKitFiles();
-			//nameIndex = filenames[index];
-
-			index.set(index.get());
-			//doLoad();
+			doDelete();
 		}
 
 		else if (name == vNew.getName()) {
@@ -538,16 +540,7 @@ private:
 		}
 
 		else if (name == vRename.getName()) {
-			if (filenames.size() == 0) return;
-
-			/*
-            // remove
-            //filename = filenames[index];
-            ofFile::removeFile(pathPresets + "/" + filename + ".json");
-            doRefreshKitFiles();
-
-            // make new
-            */
+			doRename();
 		}
 
 		else if (name == vPrevious.getName()) {
@@ -562,15 +555,15 @@ private:
 			doRefreshKitFiles();
 		}
 
-		else if (name == vClear.getName()) {
+		else if (name == vClearKit.getName()) {
 			doClearKit();
 		}
 
-		else if (name == vPopulate.getName()) {
+		else if (name == vPopulateKit.getName()) {
 			doPopulateKit();
 		}
 
-		else if (name == vPopulateRandom.getName()) {
+		else if (name == vPopulateRandomKit.getName()) {
 			doPopulateRandomKit();
 		}
 	}
@@ -586,11 +579,15 @@ public:
 	ofParameterGroup paramsInternal { "Internal" };
 	ofParameterGroup paramsPreset { "Preset" };
 
+protected:
+	string name = ""; // only for instance naming.
+
 private:
-	string pathPresets = "Presets";
-	string pathGlobal = ""; //main folder where nested folder goes inside
+	string pathPresets = "Presets"; // path to put the preset files.
+	string pathGlobal = ""; // Optional main folder where nested folder goes inside.
 
 	// Files Browser
+protected:
 	ofDirectory dir;
 	string fileName;
 	string filePath;
@@ -611,7 +608,7 @@ public:
 		return index.get();
 	}
 
-private:
+protected:
 	int getNumFiles() {
 		return filenames.size();
 	}
@@ -656,10 +653,12 @@ private:
 		return b;
 	}
 
+protected:
 	//TODO:
 	bool bOverInputText = false;
 	bool bDoingNew = false;
 
+protected:
 	void doAddNewPreset() {
 		ofLogNotice("ofxSurfingPresetsLite") << "doAddNewPreset()";
 
@@ -667,6 +666,20 @@ private:
 		doSave();
 		bool b = doRefreshKitFiles();
 		if (b) index = getNumPresets() - 1; //workflow
+	}
+
+	void doDelete() {
+		ofLogNotice("ofxSurfingPresetsLite") << "doDelete()";
+
+		if (filenames.size() == 0) return;
+
+		ofFile::removeFile(pathPresets + "/" + filename + ".json");
+		doRefreshKitFiles();
+
+		//nameIndex = filenames[index];
+
+		index.set(index.get());
+		//doLoad();
 	}
 
 	void doNewPreset() {
@@ -693,6 +706,28 @@ private:
 		//TODO:
 		// should rename if file is already there!
 
+		setFilename(indexName);
+	}
+
+	void doRename() {
+		ofLogNotice("ofxSurfingPresetsLite") << "doRename()";
+
+		if (filenames.size() == 0) return;
+
+		/*
+        // remove
+        //filename = filenames[index];
+        ofFile::removeFile(pathPresets + "/" + filename + ".json");
+        doRefreshKitFiles();
+        // make new
+        */
+
+		// delete
+		doDelete();
+
+		// create new
+		if (!bOverInputText) bOverInputText = true;
+		indexName = "";
 		setFilename(indexName);
 	}
 
@@ -1070,8 +1105,22 @@ private:
 		if (mod_ALT) bKeyModAlt = true;
 
 		if (key == 'g') setToggleGuiVisible();
+
 		if (key == OF_KEY_LEFT) doLoadPrevious();
 		if (key == OF_KEY_RIGHT) doLoadNext();
+		if (key == OF_KEY_UP) {
+			if (index < guiRowAmount) return;
+			int i = index;
+			i = i - guiRowAmount;
+			index = ofClamp(i, index.getMin(), index.getMax());
+		}
+		if (key == OF_KEY_DOWN) {
+			if (index > index.getMax() - guiRowAmount) return;
+			int i = index;
+			i = i + guiRowAmount;
+			index = ofClamp(i, index.getMin(), index.getMax());
+		}
+
 		if (key == OF_KEY_BACKSPACE && bKeyModCtrl) vReset.trigger();
 		if (key == OF_KEY_BACKSPACE && !bKeyModCtrl) vRandom.trigger();
 		if (key == OF_KEY_RETURN && bKeyModCtrl) doNewPreset();
