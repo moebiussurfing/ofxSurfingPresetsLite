@@ -59,13 +59,13 @@ private:
 	}
 
 private:
-//public:
-// 	   //TODO: fix
-	// Customize name to avoid window names colliding 
+	//public:
+	// 	   //TODO: fix
+	// Customize name to avoid window names colliding
 	// with other preset manager instances
 	//--------------------------------------------------------------
 	void setNameUI(string s) {
-		bGui.set(ofToString("UI ") + s, true);
+		bGui.set(ofToString("PRESETS ") + s, true);
 	}
 
 private:
@@ -75,8 +75,8 @@ private:
 	//----
 
 protected:
-	bool bKeyModCtrl = false;
-	bool bKeyModAlt = false;
+	bool bMod_CONTROL = false;
+	bool bMod_ALT = false;
 
 	//----
 
@@ -86,18 +86,21 @@ public:
 
 	ofParameter<int> index { "Index", -1, -1, -1 };
 	ofParameter<string> indexName { "Name", "NONE" };
+
 	ofParameter<bool> bCycled { "Cycled", true };
+	ofParameter<int> numPresets { "Num presets", 9, 1, 32 };
 
 private:
 	int index_PRE = -1; // pre
 
 public:
 	ofParameter<bool> bGui { "PRESETS", true };
-	ofParameter<bool> bGuiParams { "UI PARAMS", true };
+	ofParameter<bool> bGuiParams { "UI PARAMETERS", true };
 	ofParameter<bool> bGuiClicker { "UI CLICKER", false };
+	//ofParameter<bool> bGuiClickerMini { "Mini Clicker", false };
 	ofParameter<bool> bGuiFloating { "Floating", true };
 	ofParameter<bool> bGuiExpand { "Expand", false };
-	ofParameter<int> guiRowSz { "Row Sz", 1, 1, 6 };
+	ofParameter<int> guiNumColumns { "Num columns", 3, 1, 5 };
 
 	void setToggleGuiVisible() { bGui = !bGui; }
 	void setGuiVisible(bool b = true) { bGui = b; }
@@ -110,11 +113,13 @@ public:
 	ofParameter<void> vNext { ">" };
 
 protected:
-	ofParameter<void> vRename { "Rename" }; //TODO
+	//ofParameter<void> vRename { "Rename" }; //TODO
+
 	ofParameter<void> vNew { "New" };
 	ofParameter<void> vDelete { "Delete" };
 	ofParameter<void> vSave { "Save" };
 	ofParameter<void> vLoad { "Load" };
+
 	ofParameter<void> vScanKit { "Scan" };
 	ofParameter<void> vClearKit { "Clear" };
 	ofParameter<void> vPopulateKit { "Populate" };
@@ -123,6 +128,8 @@ protected:
 	ofParameter<bool> bAutoSave { "AutoSave", true }; // edit mode
 	ofParameter<bool> bKeys { "Keys", true };
 	ofParameter<bool> bHelp { "Help", true };
+
+	vector<char> keyCommandsChars;
 
 private:
 	void setup() {
@@ -142,6 +149,7 @@ private:
 		ofLogNotice("ofxSurfingPresetsLite") << "setupParameters()";
 
 		indexName.setSerializable(false);
+		paramsKit.setSerializable(false);
 
 		//paramsUI.add(bGuiClicker);
 		//params.add(paramsUI);
@@ -169,8 +177,9 @@ private:
 		paramsInternal.add(bGuiClicker);
 		paramsInternal.add(bGuiFloating);
 		paramsInternal.add(bGuiExpand);
-		paramsInternal.add(guiRowSz);
+		paramsInternal.add(guiNumColumns);
 		paramsInternal.add(bCycled);
+		paramsInternal.add(numPresets);
 		paramsInternal.add(bGui);
 
 		parameters.add(paramsBrowse);
@@ -200,8 +209,51 @@ private:
 
 		ofxSurfing::loadGroup(parameters, s);
 
-		//buildHelp();
 		bFlagBuildHelp = true;
+
+		vector<char> pChars = {
+			'0',
+			'1',
+			'2',
+			'3',
+			'4',
+			'5',
+			'6',
+			'7',
+			'8',
+			'9',
+			'q',
+			'w',
+			'e',
+			'r',
+			't',
+			'y',
+			'u',
+			'i',
+			'o',
+			'p',
+			'a',
+			's',
+			'd',
+			'f',
+			'g',
+			'h',
+			'j',
+			'k',
+			'l',
+			'z',
+			'x',
+			'c',
+			'v',
+			'b',
+			'n',
+			'm'
+		};
+		numPresets = ofClamp(numPresets.get(), 0, numPresets.getMax());
+		keyCommandsChars.clear();
+		for (size_t i = 0; i < numPresets; i++) {
+			keyCommandsChars.push_back(pChars[i]);
+		}
 
 		bDoneStartup = true;
 	}
@@ -215,9 +267,6 @@ private:
 			bFlagBuildHelp = false;
 			buildHelp();
 		}
-	}
-
-	void draw() {
 	}
 
 protected:
@@ -339,36 +388,59 @@ public:
 	void doLoadPrevious() {
 		ofLogNotice("ofxSurfingPresetsLite") << "doLoadPrevious()";
 		if (index.getMax() == -1) return;
+		int i = index;
 
 		if (index > index.getMin())
-			index--;
-		else if (index == index.getMin())
+			i--;
+		else if (i == index.getMin())
 			if (bCycled)
-				index = index.getMax();
+				i = index.getMax();
 			else
-				index = index.getMin();
+				i = index.getMin();
+		index.set(i);
 	}
 
 	void doLoadNext() {
 		ofLogNotice("ofxSurfingPresetsLite") << "doLoadNext()";
 		if (index.getMax() == -1) return;
-
-		if (index < index.getMax())
-			index++;
-		else if (index == index.getMax())
+		int i = index;
+		if (i < index.getMax())
+			i++;
+		else if (i == index.getMax())
 			if (bCycled)
-				index = index.getMin();
+				i = index.getMin();
 			else
-				index = index.getMax();
+				i = index.getMax();
+		index.set(i);
+	}
+
+	void doLoadNextRow() {
+		ofLogNotice("ofxSurfingPresetsLite") << "doLoadNextRow()";
+
+		if (index > index.getMax() - guiNumColumns) return;
+		int i = index;
+		i = i + guiNumColumns;
+		if (bCycled)
+			if (i > index.getMax()) i = index.getMin() + i;
+		index = ofClamp(i, index.getMin(), index.getMax());
+	}
+
+	void doLoadPreviousRow() {
+		ofLogNotice("ofxSurfingPresetsLite") << "doLoadPreviousRow()";
+
+		if (index < guiNumColumns) return;
+		int i = index;
+		i = i - guiNumColumns;
+		if (bCycled)
+			if (i < index.getMin()) i = index.getMax() - i;
+		index = ofClamp(i, index.getMin(), index.getMax());
 	}
 
 private:
 	void Changed(ofAbstractParameter & e) {
 		string name = e.getName();
-
 		ofLogNotice("ofxSurfingPresetsLite") << "Changed: " << name << ": " << e;
 
-		//buildHelp();
 		bFlagBuildHelp = true;
 
 		if (name == index.getName()) {
@@ -391,7 +463,7 @@ private:
 
 				// 1. Common Load but AutoSave
 
-				if (!bKeyModCtrl && !bKeyModAlt) // Ctrl nor Alt not pressed
+				if (!bMod_CONTROL && !bMod_ALT) // Ctrl nor Alt not pressed
 				{
 					// Autosave
 					if (bAutoSave) {
@@ -426,7 +498,7 @@ private:
 				// Save to clicked preset index
 				// Ctrl pressed. Alt not pressed
 
-				else if (bKeyModCtrl && !bKeyModAlt) {
+				else if (bMod_CONTROL && !bMod_ALT) {
 					if (index < filenames.size()) {
 						filename = filenames[index];
 						doSave();
@@ -445,7 +517,7 @@ private:
 				// (from/to) pre/current index
 				// Ctrl not pressed. Alt pressed
 
-				else if (!bKeyModCtrl && bKeyModAlt) {
+				else if (!bMod_CONTROL && bMod_ALT) {
 					if (dir.size() > 0 && index < filenames.size() && index_PRE < filenames.size()) {
 
 						// Rename target to source
@@ -537,15 +609,15 @@ private:
 		}
 
 		else if (name == vNew.getName()) {
-			if (bKeyModCtrl)
+			if (bMod_CONTROL)
 				doNewPreset();
 			else
 				doAddNewPreset();
 		}
 
-		else if (name == vRename.getName()) {
-			doRename();
-		}
+		//else if (name == vRename.getName()) {
+		//	doRename();
+		//}
 
 		else if (name == vPrevious.getName()) {
 			doLoadPrevious();
@@ -564,11 +636,11 @@ private:
 		}
 
 		else if (name == vPopulateKit.getName()) {
-			doPopulateKit();
+			doPopulateKit(numPresets);
 		}
 
 		else if (name == vPopulateRandomKit.getName()) {
-			doPopulateRandomKit();
+			doPopulateRandomKit(numPresets);
 		}
 	}
 
@@ -576,12 +648,12 @@ private:
 
 public:
 	ofParameterGroup parameters { "PRESETS MANAGER" };
+	ofParameterGroup paramsPreset { "Preset" };
 	ofParameterGroup paramsBrowse { "Browse" };
 	ofParameterGroup paramsManager { "Manager" };
 	ofParameterGroup paramsKit { "Kit" };
-	//ofParameterGroup paramsUI { "UI" };
 	ofParameterGroup paramsInternal { "Internal" };
-	ofParameterGroup paramsPreset { "Preset" };
+	//ofParameterGroup paramsUI { "UI" };
 
 protected:
 	string name = ""; // only for instance naming.
@@ -713,28 +785,28 @@ protected:
 		setFilename(indexName);
 	}
 
-	void doRename() {
-		ofLogNotice("ofxSurfingPresetsLite") << "doRename()";
+	//void doRename() {
+	//	ofLogNotice("ofxSurfingPresetsLite") << "doRename()";
 
-		if (filenames.size() == 0) return;
+	//	if (filenames.size() == 0) return;
 
-		/*
-        // remove
-        //filename = filenames[index];
-        ofFile::removeFile(pathPresets + "\\" + filename + ".json");
-        doRefreshKitFiles();
-        // make new
-        */
+	//	/*
+ //       // remove
+ //       //filename = filenames[index];
+ //       ofFile::removeFile(pathPresets + "\\" + filename + ".json");
+ //       doRefreshKitFiles();
+ //       // make new
+ //       */
 
-		// delete
-		doDelete();
+	//	// delete
+	//	doDelete();
 
-		// create new
-		if (!bOverInputText) bOverInputText = true;
-		indexName = "";
+	//	// create new
+	//	if (!bOverInputText) bOverInputText = true;
+	//	indexName = "";
 
-		setFilename("");
-	}
+	//	setFilename("");
+	//}
 
 	void doClearKit(bool createOne = true) {
 		ofLogNotice("ofxSurfingPresetsLite") << "doClearKit";
@@ -753,13 +825,13 @@ protected:
 		if (b) index.set(0);
 	}
 
-	void doPopulateRandomKit(int amount = 9) { //pass -1 to overwrite/use the same amount of presets
+	void doPopulateRandomKit(int amount) { //pass -1 to overwrite/use the same amount of presets
 		ofLogNotice("ofxSurfingPresetsLite") << "doPopulateRandomKit() " << amount;
 
 		doPopulateKit(amount, true);
 	}
 
-	void doPopulateKit(int amount = 9, bool bRandom = false) { //pass -1 to overwrite/use the same amount of presets
+	void doPopulateKit(int amount, bool bRandom = false) { //pass -1 to overwrite/use the same amount of presets
 		ofLogNotice("ofxSurfingPresetsLite") << "doPopulateKit() " << amount;
 
 		doClearKit(false);
@@ -782,11 +854,209 @@ protected:
 
 	//----
 
+	//--------------------------------------------------------------
+	void keyPressed(ofKeyEventArgs & eventArgs) {
+		if (!bKeys) return;
+
+		const int & key = eventArgs.key;
+		ofLogVerbose("ofxSurfingPresetsLite") << "keyPressed: " << (char)key /*<< " [" << key << "]"*/;
+
+		// Modifiers
+		bool mod_COMMAND = eventArgs.hasModifier(OF_KEY_COMMAND);
+		bool mod_CONTROL = eventArgs.hasModifier(OF_KEY_CONTROL);
+		bool mod_ALT = eventArgs.hasModifier(OF_KEY_ALT);
+		bool mod_SHIFT = eventArgs.hasModifier(OF_KEY_SHIFT);
+
+		if (mod_CONTROL) bMod_CONTROL = true;
+		if (mod_ALT) bMod_ALT = true;
+
+		if (key == OF_KEY_LEFT)
+			doLoadPrevious();
+		else if (key == OF_KEY_RIGHT)
+			doLoadNext();
+		else if (key == OF_KEY_UP)
+			doLoadPreviousRow();
+		else if (key == OF_KEY_DOWN)
+			doLoadNextRow();
+
+		else if (key == OF_KEY_BACKSPACE && bMod_CONTROL)
+			doResetParams();
+		else if (key == OF_KEY_BACKSPACE && !bMod_CONTROL)
+			doRandomizeParams();
+
+		else if (key == OF_KEY_RETURN && bMod_CONTROL)
+			doNewPreset();
+		else if (key == OF_KEY_RETURN && !bMod_CONTROL)
+			doAddNewPreset();
+
+		else {
+			//TODO: not working
+			for (size_t i = 0; i < numPresets; i++) {
+				if ((char)key == keyCommandsChars[i]) {
+					//if (key == int(keyCommandsChars[i])) {
+					index.set(i);
+					return;
+				}
+			}
+		}
+
+		if (key == 'g')
+			setToggleGuiVisible();
+		else if (key == 'G')
+			bGuiClicker = !bGuiClicker;
+	}
+
+	//--------------------------------------------------------------
+	void keyReleased(ofKeyEventArgs & eventArgs) {
+		if (!bKeys) return;
+
+		const int & key = eventArgs.key;
+		ofLogVerbose("ofxSurfingPresetsLite") << "keyReleased: " << (char)key /*<< " [" << key << "]"*/;
+
+		// Modifiers
+		bool mod_COMMAND = eventArgs.hasModifier(OF_KEY_COMMAND);
+		bool mod_CONTROL = eventArgs.hasModifier(OF_KEY_CONTROL);
+		bool mod_ALT = eventArgs.hasModifier(OF_KEY_ALT);
+		bool mod_SHIFT = eventArgs.hasModifier(OF_KEY_SHIFT);
+
+		if (!mod_CONTROL) bMod_CONTROL = false;
+		if (!mod_ALT) bMod_ALT = false;
+	}
+
+	//--------------------------------------------------------------
+	void addKeysListeners() {
+		ofAddListener(ofEvents().keyPressed, this, &ofxSurfingPresetsLite::keyPressed);
+		ofAddListener(ofEvents().keyReleased, this, &ofxSurfingPresetsLite::keyReleased);
+	}
+
+	//--------------------------------------------------------------
+	void removeKeysListeners() {
+		ofRemoveListener(ofEvents().keyPressed, this, &ofxSurfingPresetsLite::keyPressed);
+		ofRemoveListener(ofEvents().keyReleased, this, &ofxSurfingPresetsLite::keyReleased);
+	}
+
+	// easy callback to know when the preset index/selector changed
+private:
+	bool bIsChangedIndex = false;
+
+public:
+	bool isChangedIndex() {
+		if (bIsChangedIndex) {
+			bIsChangedIndex = false;
+			return true;
+		} else
+			return false;
+	}
+
+	//--
+
 	// Resets Engine
-	//
-	//TODO:
 
 private:
+	// Random simple
+	//--------------------------------------------------------------
+	void doRandomizeParams(bool bSilent = false) {
+		ofLogNotice("ofxSurfingPresetsLite") << "doRandomizeParams";
+
+		//TODO:
+		// this is not recursive inside the nested groups content!
+		// get solution from ImHelpers from addGroup to iterate groups.
+
+		for (int i = 0; i < paramsPreset.size(); i++) {
+			auto & p = paramsPreset[i];
+
+			if (p.type() == typeid(ofParameter<float>).name()) {
+				ofParameter<float> pr = p.cast<float>();
+				float v = ofRandom(pr.getMin(), pr.getMax());
+				if (bSilent)
+					pr.setWithoutEventNotifications(v);
+				else
+					pr.set(v);
+				ofLogNotice("ofxSurfingPresetsLite") << pr.getName() << " = " << pr.get();
+			}
+
+			else if (p.type() == typeid(ofParameter<int>).name()) {
+				ofParameter<int> pr = p.cast<int>();
+				int v = ofRandom(pr.getMin(), pr.getMax());
+				if (bSilent)
+					pr.setWithoutEventNotifications(v);
+				else
+					pr.set(v);
+				ofLogNotice("ofxSurfingPresetsLite") << pr.getName() << " = " << pr.get();
+			}
+
+			// include booleans
+			else if (p.type() == typeid(ofParameter<bool>).name()) {
+				ofParameter<bool> pr = p.cast<bool>();
+				bool b = (ofRandom(1.f) >= 0.5f);
+				if (bSilent)
+					pr.setWithoutEventNotifications(b);
+				else
+					pr.set(b);
+				ofLogNotice("ofxSurfingPresetsLite") << pr.getName() << " = " << pr.get();
+			}
+
+			// colors
+			else if (p.type() == typeid(ofParameter<ofColor>).name()) {
+				ofParameter<ofColor> pr = p.cast<ofColor>();
+				ofColor c;
+				c.setBrightness(255);
+				c.setSaturation(255);
+				c.setHue(ofRandom(255));
+
+				if (bSilent)
+					pr.setWithoutEventNotifications(c);
+				else
+					pr.set(c);
+				ofLogNotice("ofxSurfingPresetsLite") << pr.getName() << " = " << pr.get();
+			}
+		}
+	}
+
+	// Reset Simple
+	//--------------------------------------------------------------
+	void doResetParams(bool bSilent = false) {
+		ofLogNotice("ofxSurfingPresetsLite") << "doResetParams";
+
+		for (int i = 0; i < paramsPreset.size(); i++) {
+			auto & p = paramsPreset[i];
+
+			if (p.type() == typeid(ofParameter<float>).name()) {
+				ofParameter<float> pr = p.cast<float>();
+				if (bSilent)
+					pr.setWithoutEventNotifications(pr.getMin());
+				else
+					pr.set(pr.getMin());
+				ofLogNotice("ofxSurfingPresetsLite") << pr.getName() << " = " << pr.get();
+			}
+
+			else if (p.type() == typeid(ofParameter<int>).name()) {
+				ofParameter<int> pr = p.cast<int>();
+				if (bSilent)
+					pr.setWithoutEventNotifications(pr.getMin());
+				else
+					pr.set(pr.getMin());
+				ofLogNotice("ofxSurfingPresetsLite") << pr.getName() << " = " << pr.get();
+			}
+
+			// include booleans
+			else if (p.type() == typeid(ofParameter<bool>).name()) {
+				ofParameter<bool> pr = p.cast<bool>();
+				bool b = false;
+				if (bSilent)
+					pr.setWithoutEventNotifications(b);
+				else
+					pr.set(b);
+				ofLogNotice("ofxSurfingPresetsLite") << pr.getName() << " = " << pr.get();
+			}
+		}
+
+		//if (!bSilent) bIsRetrigged = true;
+	}
+
+	//--
+
+	//TODO:
 	/*
     enum ResetPramsType
     {
@@ -991,186 +1261,4 @@ private:
         }
     }
     */
-
-	// Random simple
-	//--------------------------------------------------------------
-	void doRandomizeParams(bool bSilent = false) {
-		ofLogNotice("ofxSurfingPresetsLite") << "doRandomizeParams";
-
-		//TODO:
-		// this is not recursive inside the nested groups content!
-		// get solution from ImHelpers from addGroup to iterate groups.
-
-		for (int i = 0; i < paramsPreset.size(); i++) {
-			auto & p = paramsPreset[i];
-
-			if (p.type() == typeid(ofParameter<float>).name()) {
-				ofParameter<float> pr = p.cast<float>();
-				float v = ofRandom(pr.getMin(), pr.getMax());
-				if (bSilent)
-					pr.setWithoutEventNotifications(v);
-				else
-					pr.set(v);
-				ofLogNotice("ofxSurfingPresetsLite") << pr.getName() << " = " << pr.get();
-			}
-
-			else if (p.type() == typeid(ofParameter<int>).name()) {
-				ofParameter<int> pr = p.cast<int>();
-				int v = ofRandom(pr.getMin(), pr.getMax());
-				if (bSilent)
-					pr.setWithoutEventNotifications(v);
-				else
-					pr.set(v);
-				ofLogNotice("ofxSurfingPresetsLite") << pr.getName() << " = " << pr.get();
-			}
-
-			// include booleans
-			else if (p.type() == typeid(ofParameter<bool>).name()) {
-				ofParameter<bool> pr = p.cast<bool>();
-				bool b = (ofRandom(1.f) >= 0.5f);
-				if (bSilent)
-					pr.setWithoutEventNotifications(b);
-				else
-					pr.set(b);
-				ofLogNotice("ofxSurfingPresetsLite") << pr.getName() << " = " << pr.get();
-			}
-
-			// colors
-			else if (p.type() == typeid(ofParameter<ofColor>).name()) {
-				ofParameter<ofColor> pr = p.cast<ofColor>();
-				ofColor c;
-				c.setBrightness(255);
-				c.setSaturation(255);
-				c.setHue(ofRandom(255));
-
-				if (bSilent)
-					pr.setWithoutEventNotifications(c);
-				else
-					pr.set(c);
-				ofLogNotice("ofxSurfingPresetsLite") << pr.getName() << " = " << pr.get();
-			}
-		}
-	}
-
-	// Reset Simple
-	//--------------------------------------------------------------
-	void doResetParams(bool bSilent = false) {
-		ofLogNotice("ofxSurfingPresetsLite") << "doResetParams";
-
-		for (int i = 0; i < paramsPreset.size(); i++) {
-			auto & p = paramsPreset[i];
-
-			if (p.type() == typeid(ofParameter<float>).name()) {
-				ofParameter<float> pr = p.cast<float>();
-				if (bSilent)
-					pr.setWithoutEventNotifications(pr.getMin());
-				else
-					pr.set(pr.getMin());
-				ofLogNotice("ofxSurfingPresetsLite") << pr.getName() << " = " << pr.get();
-			}
-
-			else if (p.type() == typeid(ofParameter<int>).name()) {
-				ofParameter<int> pr = p.cast<int>();
-				if (bSilent)
-					pr.setWithoutEventNotifications(pr.getMin());
-				else
-					pr.set(pr.getMin());
-				ofLogNotice("ofxSurfingPresetsLite") << pr.getName() << " = " << pr.get();
-			}
-
-			// include booleans
-			else if (p.type() == typeid(ofParameter<bool>).name()) {
-				ofParameter<bool> pr = p.cast<bool>();
-				bool b = false;
-				if (bSilent)
-					pr.setWithoutEventNotifications(b);
-				else
-					pr.set(b);
-				ofLogNotice("ofxSurfingPresetsLite") << pr.getName() << " = " << pr.get();
-			}
-		}
-
-		//if (!bSilent) bIsRetrigged = true;
-	}
-
-	//--------------------------------------------------------------
-	void keyPressed(ofKeyEventArgs & eventArgs) {
-		if (!bKeys) return;
-
-		const int & key = eventArgs.key;
-		ofLogVerbose("ofxSurfingPresetsLite") << "keyPressed: " << (char)key /*<< " [" << key << "]"*/;
-
-		// Modifiers
-		bool mod_COMMAND = eventArgs.hasModifier(OF_KEY_COMMAND);
-		bool mod_CONTROL = eventArgs.hasModifier(OF_KEY_CONTROL);
-		bool mod_ALT = eventArgs.hasModifier(OF_KEY_ALT);
-		bool mod_SHIFT = eventArgs.hasModifier(OF_KEY_SHIFT);
-
-		if (mod_CONTROL) bKeyModCtrl = true;
-		if (mod_ALT) bKeyModAlt = true;
-
-		if (key == 'g') setToggleGuiVisible();
-
-		if (key == OF_KEY_LEFT) doLoadPrevious();
-		if (key == OF_KEY_RIGHT) doLoadNext();
-		if (key == OF_KEY_UP) {
-			if (index < guiRowSz) return;
-			int i = index;
-			i = i - guiRowSz;
-			index = ofClamp(i, index.getMin(), index.getMax());
-		}
-		if (key == OF_KEY_DOWN) {
-			if (index > index.getMax() - guiRowSz) return;
-			int i = index;
-			i = i + guiRowSz;
-			index = ofClamp(i, index.getMin(), index.getMax());
-		}
-
-		if (key == OF_KEY_BACKSPACE && bKeyModCtrl) vReset.trigger();
-		if (key == OF_KEY_BACKSPACE && !bKeyModCtrl) vRandom.trigger();
-		if (key == OF_KEY_RETURN && bKeyModCtrl) doNewPreset();
-		if (key == OF_KEY_RETURN && !bKeyModCtrl) doAddNewPreset();
-	}
-
-	//--------------------------------------------------------------
-	void keyReleased(ofKeyEventArgs & eventArgs) {
-		if (!bKeys) return;
-
-		const int & key = eventArgs.key;
-		ofLogVerbose("ofxSurfingPresetsLite") << "keyReleased: " << (char)key /*<< " [" << key << "]"*/;
-
-		// Modifiers
-		bool mod_COMMAND = eventArgs.hasModifier(OF_KEY_COMMAND);
-		bool mod_CONTROL = eventArgs.hasModifier(OF_KEY_CONTROL);
-		bool mod_ALT = eventArgs.hasModifier(OF_KEY_ALT);
-		bool mod_SHIFT = eventArgs.hasModifier(OF_KEY_SHIFT);
-
-		if (!mod_CONTROL) bKeyModCtrl = false;
-		if (!mod_ALT) bKeyModAlt = false;
-	}
-
-	//--------------------------------------------------------------
-	void addKeysListeners() {
-		ofAddListener(ofEvents().keyPressed, this, &ofxSurfingPresetsLite::keyPressed);
-		ofAddListener(ofEvents().keyReleased, this, &ofxSurfingPresetsLite::keyReleased);
-	}
-
-	//--------------------------------------------------------------
-	void removeKeysListeners() {
-		ofRemoveListener(ofEvents().keyPressed, this, &ofxSurfingPresetsLite::keyPressed);
-		ofRemoveListener(ofEvents().keyReleased, this, &ofxSurfingPresetsLite::keyReleased);
-	}
-
-	// easy callback to know when the preset index/selector changed
-private:
-	bool bIsChangedIndex = false;
-
-public:
-	bool isChangedIndex() {
-		if (bIsChangedIndex) {
-			bIsChangedIndex = false;
-			return true;
-		} else
-			return false;
-	}
 };

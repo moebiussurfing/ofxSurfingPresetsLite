@@ -13,14 +13,6 @@ class ofxSurfingPresetsLiteImGui : public ofxSurfingPresetsLite {
 private:
 	ofxSurfingGui * ui = nullptr;
 
-protected:
-	vector<char> keyCommandsChars;
-	vector<ofColor> colors;
-	bool bGuiColorized = false;
-
-public:
-	void setGuiColorized(bool b) { bGuiColorized = b; }
-
 public:
 	void setUiPtr(ofxSurfingGui * _ui) {
 		ui = _ui;
@@ -29,7 +21,6 @@ public:
 		// matrix colors
 		if (bGuiColorized) {
 			colors.clear();
-			keyCommandsChars.clear();
 			for (size_t i = 0; i < 9; i++) {
 				ofColor c;
 				if (i < 3)
@@ -41,7 +32,6 @@ public:
 
 				colors.push_back(c);
 			}
-			keyCommandsChars = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
 		}
 	}
 
@@ -67,32 +57,35 @@ public:
 		if (bOpen_) {
 			string s = filename;
 			string sn = "Presets";
-			//string sn = "PRESETS";
 
 			bool b;
 			if (!bFoldered_) {
 				b = true;
-				if (!bWindowed) ui->AddLabelBig(sn);
+				if (!bWindowed && ui->isMaximized()) ui->AddLabelBig(sn);
 			} else {
 				b = ui->BeginTree(sn, bOpen);
 				if (b) ui->AddSpacing();
 			}
 
-			if (b) {
-				if (bMinimized_) ui->Add(ui->bMinimize, OFX_IM_TOGGLE_ROUNDED);
+			ui->Add(ui->bMinimize, OFX_IM_TOGGLE_ROUNDED_MINI);
+			ui->AddSpacing();
 
-				if (!ui->bMinimize) {
+			if (b) {
+				if (ui->isMaximized()) {
+					ui->Add(bGuiParams, OFX_IM_TOGGLE_ROUNDED_MINI);
 					ui->Add(bGuiExpand, OFX_IM_TOGGLE_ROUNDED_MINI);
 					ui->AddSpacing();
 				}
 
+				//if (bMinimized_ || !bGuiFloating || !bGuiParams)
+				//	ui->Add(ui->bMinimize, OFX_IM_TOGGLE_ROUNDED_MINI);
+
 				// expanded
 				if (bGuiExpand) {
 					// maximized
-					if (!ui->bMinimize) {
+					if (ui->isMaximized()) {
 						ui->Add(vLoad, OFX_IM_BUTTON_SMALL, 2, true);
 						ui->AddTooltip("Discard changes\nand reload file");
-						//ui->Add(vSave, OFX_IM_BUTTON_SMALL_BORDER_BLINK, 2);
 						if (ui->Add(vSave,
 								(bAutoSave ? OFX_IM_BUTTON_SMALL : OFX_IM_BUTTON_SMALL_BORDER_BLINK), 2)) {
 							bOverInputText = false;
@@ -100,10 +93,22 @@ public:
 						}
 						ui->AddTooltip("Save changes\nto file");
 
+						ui->Add(bAutoSave, OFX_IM_TOGGLE_SMALL_BORDER_BLINK);
+						//ui->Add(vRename, OFX_IM_BUTTON_SMALL, 2, true);
+						//ui->AddTooltip("Change file name");
+						//ui->Add(bAutoSave, OFX_IM_TOGGLE_SMALL_BORDER_BLINK, 2);
+						string s_;
+						if (bAutoSave) {
+							s_ = "Edit Mode";
+						} else {
+							s_ = "Manual save Mode";
+						}
+						ui->AddTooltip(s_);
+
 						if (!bOverInputText) {
 							ui->Add(vNew, OFX_IM_BUTTON_SMALL, 2);
 							string s_;
-							if (bKeyModCtrl) {
+							if (bMod_CONTROL) {
 								s_ = "Release control\nto rename";
 							} else {
 								s_ = "Press control\nto create";
@@ -119,16 +124,6 @@ public:
 						ui->Add(vDelete, OFX_IM_BUTTON_SMALL, 2);
 						ui->AddTooltip("Remove preset file");
 
-						ui->Add(vRename, OFX_IM_BUTTON_SMALL, 2, true);
-						ui->AddTooltip("Change file name");
-						ui->Add(bAutoSave, OFX_IM_TOGGLE_SMALL_BORDER_BLINK, 2);
-						string s_;
-						if (bAutoSave) {
-							s_ = "Edit Mode";
-						} else {
-							s_ = "Manual save Mode";
-						}
-						ui->AddTooltip(s_);
 						ui->Add(vReset, OFX_IM_BUTTON_SMALL, 2, true);
 						ui->AddTooltip("Preset reset");
 						ui->Add(vRandom, OFX_IM_BUTTON_SMALL, 2);
@@ -140,14 +135,14 @@ public:
 						float _w2 = getWidgetsWidth(2);
 						float _h = getWidgetsHeightUnit();
 
-						ui->AddLabel("KIT");
+						//ui->AddLabel("KIT");
 
 						if (ImGui::Button("Clear", ImVec2(_w2, _h))) {
-							ImGui::OpenPopup("CLEAR KIT ?");
+							ImGui::OpenPopup("CLEAR KIT?");
 						}
-						ui->AddTooltip("Remove all \nfile Presets!");
+						ui->AddTooltip("Remove all \nfile presets!");
 
-						if (ImGui::BeginPopupModal("CLEAR KIT ?", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+						if (ImGui::BeginPopupModal("CLEAR KIT?", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
 							ui->AddLabelBig("Presets kit \nwill be erased.", true, true);
 							ui->AddSpacing();
 							ui->AddLabelBig("This operation \ncannot be undone!", true, true);
@@ -240,7 +235,7 @@ public:
 
 				//--
 
-				if (!ui->bMinimize && index.getMax() > -1) ui->AddSpacingSeparated();
+				if (ui->isMaximized() && index.getMax() > -1) ui->AddSpacingSeparated();
 
 				if (bGuiExpand) // expanded
 				{
@@ -263,7 +258,12 @@ public:
 				//--
 
 				drawImGuiClicker();
-				// drawImGuiClicker(bWindowed,ui->bMinimize);
+
+				//if (!bGuiClickerMini) {
+				//	drawImGuiClicker();
+				//} else {
+				//	drawImGuiClicker(bWindowed, true);
+				//}
 
 				//--
 
@@ -281,6 +281,7 @@ public:
 	// 2. Presets Clicker
 
 	void drawImGuiClicker(bool bWindowed = false, bool bMinimal = false) {
+
 		bool bOpen_ = false;
 		if (bWindowed) {
 			bOpen_ = ui->BeginWindow(bGui);
@@ -295,6 +296,7 @@ public:
 		if (!bMinimal) {
 			if (!ui->bMinimize) {
 				ui->Add(bGuiClicker, OFX_IM_TOGGLE_BUTTON_ROUNDED_MINI);
+				//ui->Add(bGuiClickerMini, OFX_IM_TOGGLE_ROUNDED_MINI_XS);
 				ui->AddSpacing();
 			}
 		} else {
@@ -302,7 +304,7 @@ public:
 		}
 
 		if (bGuiClicker) {
-			if (ui->bMinimize && !bMinimal) ui->AddSpacingSeparated();
+			if (ui->isMinimized() && !bMinimal) ui->AddSpacingSeparated();
 
 			float _h2 = ui->getWidgetsHeightUnit();
 			_h2 *= 1.5f;
@@ -312,26 +314,37 @@ public:
 			//TODO: add a public var
 			bool bFlip = false;
 
-			string toolTip = "";
-			if (bKeyModCtrl)
-				toolTip = "Copy To";
-			else if (bKeyModAlt)
-				toolTip = "Swap With";
+			string sTip = "";
+			if (bMod_CONTROL)
+				sTip = "Copy to...";
+			else if (bMod_ALT)
+				sTip = "Swap between..";
+			else if (bHelp)
+				sTip = "Press Ctrl/Alt\nto copy/swap";
 
 			if (bGuiColorized) {
 				ofxImGuiSurfing::AddMatrixClickerLabels(index, keyCommandsChars, colors, bResponsiveButtonsClicker,
-					guiRowSz, true, _h2, toolTip, bFlip);
+					guiNumColumns, true, _h2, sTip, bFlip);
 			} else {
 				ofxImGuiSurfing::AddMatrixClickerLabels(index, keyCommandsChars, bResponsiveButtonsClicker,
-					guiRowSz, true, _h2, toolTip, bFlip);
+					guiNumColumns, true, _h2, sTip, bFlip);
 			}
 			if (bGuiExpand) {
-				if (dir.size() > 0) {
-					if (!bMinimal && !ui->bMinimize) {
+				if (index.getMax() > -1) {
+					if (!bMinimal && ui->isMaximized()) {
 						ui->AddSpacing();
-						if (!ui->bMinimize) {
-							ui->Add(guiRowSz, OFX_IM_STEPPER, 2);
+						ui->Add(ui->bAdvanced, OFX_IM_TOGGLE_ROUNDED_MINI);
+						if (ui->bAdvanced) {
+							ui->AddSpacing();
+							ui->AddLabel(guiNumColumns.getName());
+							ui->Add(guiNumColumns, OFX_IM_STEPPER_NO_LABEL);
 							ui->AddTooltip("Buttons per row.");
+							ui->AddLabel(numPresets.getName());
+							ui->Add(numPresets, OFX_IM_STEPPER_NO_LABEL);
+							ui->AddTooltip("Amount populating presets.");
+							ui->Add(bCycled);
+							ui->Add(bKeys);
+							ui->Add(bHelp);
 						}
 					}
 				}
@@ -358,38 +371,37 @@ public:
 		if (ui == nullptr) return;
 		ui->Begin();
 		{
-			string n;
-			if (bGuiFloating)
-				n = "PARAMETERS " + name;
-			else
-				n = "PRESETS " + name;
-			//n = ofToUpper(n);
+			if (bGuiParams) {
 
-			if (ui->BeginWindow(n)) {
-				ui->Add(ui->bMinimize, OFX_IM_TOGGLE_ROUNDED_SMALL);
-				ui->Add(bGuiFloating, OFX_IM_TOGGLE_ROUNDED_MINI);
-				ui->AddSpacingSeparated();
+				string n;
+				if (bGuiFloating)
+					n = "PARAMETERS " + name;
+				else
+					n = "PRESETS " + name;
+				if (ui->BeginWindow(n)) {
 
-				if (!bGuiFloating)
-					ui->AddLabelBig("Parameters");
-				ui->AddSpacing();
+				//if (ui->BeginWindow(bGuiParams)) {
+					ui->Add(ui->bMinimize, OFX_IM_TOGGLE_ROUNDED_SMALL);
+					ui->Add(bGuiFloating, OFX_IM_TOGGLE_ROUNDED_MINI);
 
-				ui->AddGroup(paramsPreset);
+					ui->AddSpacingSeparated();
 
-				// A.
-				// Integrated inside another panel
-				if (!bGuiFloating) {
-					ui->AddSpacingBigSeparated();
+					if (!bGuiFloating && ui->isMaximized())
+						ui->AddLabelBig("Parameters");
+					ui->AddSpacing();
 
-					drawImGui();
-				}
+					ui->AddGroup(paramsPreset);
 
-				// B.
-				// A minimal clicker only version
-				// drawImGuiClicker();
+					// Integrated inside another panel
+					if (!bGuiFloating) {
+						ui->AddSpacingBigSeparated();
 
-				ui->EndWindow();
-			};
+						drawImGui();
+					}
+
+					ui->EndWindow();
+				};
+			}
 
 			// C.
 			// Separated on another floating window
@@ -397,4 +409,11 @@ public:
 		}
 		ui->End();
 	}
+
+protected:
+	vector<ofColor> colors;
+	bool bGuiColorized = false;
+
+public:
+	void setGuiColorized(bool b) { bGuiColorized = b; }
 };

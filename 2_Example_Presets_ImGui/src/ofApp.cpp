@@ -4,7 +4,7 @@
 void ofApp::setup() {
 #if 1
 	ofSetWindowPosition(-1900, 50);
-	ofSetWindowShape(1280, 720);
+	ofSetWindowShape(1280, 900);
 #endif
 
 	presetsManager.setUiPtr(&ui);
