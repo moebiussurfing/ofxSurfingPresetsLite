@@ -39,7 +39,7 @@ EXAMPLE
 	// Setup
 	presetsManager.setUiPtr(&ui);
 	presetsManager.setPath(path_GLOBAL_Folder);
-	presetsManager.AddGroup(params_Preset);
+	presetsManager.addGroup(paramsPreset);
 
 	// Draw
 	// ImGui widgets not windowed
@@ -81,7 +81,7 @@ public:
 
         params.add(bGui);
         params.add(index);
-        params.add(vScan);
+        params.add(vScanKit);
         params.add(vDelete);
         params.add(vSave);
         params.add(vLoad);
@@ -90,10 +90,10 @@ public:
         params.add(vReset);
         params.add(vRandom);
         params.add(bAutoSave); //edit
-        params.add(bClicker);
-        params.add(bExpand);
-		params.add(amountButtonsPerRowClicker);
-		params.add(bFloating);
+        params.add(bGuiClicker);
+        params.add(bGuiExpand);
+		params.add(guiAmountRow);
+		params.add(bGuiFloating);
 
         ofSetLogLevel("ofxSurfingPresetsLite", OF_LOG_NOTICE);
     }
@@ -114,11 +114,11 @@ private:
 
     void exit()
     {
-        ofxSurfingHelpers::CheckFolder(path_Global);
+        ofxSurfingHelpers::CheckFolder(path);
 
         string s;
-        if (path_Global == "") s = path_Settings;
-        else s = path_Global + "/" + path_Settings;
+        if (path == "") s = pathSettings;
+        else s = path + "/" + pathSettings;
         ofxSurfingHelpers::saveGroup(params, s);
 
         doSave();
@@ -153,20 +153,19 @@ public:
     }
 
 private:
-    string path_Settings = "ofxSurfingPresetsLite_Settings.json";
+    string pathSettings = "ofxSurfingPresetsLite_Settings.json";
 
-    bool bKeyCtrl = false;
-    bool bKeyAlt = false;
+    bool bKeyModCtrl = false;
+    bool bKeyModAlt = false;
 
     //----
 
 private:
     vector<char> keyCommandsChars;
     vector<ofColor> colors;
-    bool bUseColorizedMatrices = false;
-
+    bool bGuiColorized = false;
 public:
-    void setColorized(bool b) { bUseColorizedMatrices = b; }
+    void setGuiColorized(bool b) { bGuiColorized = b; }
 
     //----
 
@@ -222,12 +221,12 @@ public:
 
                 if (!ui->bMinimize)
                 {
-                    ui->Add(bExpand, OFX_IM_TOGGLE_ROUNDED_MINI);
+                    ui->Add(bGuiExpand, OFX_IM_TOGGLE_ROUNDED_MINI);
                     ui->AddSpacing();
                 }
 
-                //ui->AddToggle("Expand", bExpand, OFX_IM_TOGGLE_ROUNDED_MINI);
-                if (bExpand)
+                //ui->AddToggle("Expand", bGuiExpand, OFX_IM_TOGGLE_ROUNDED_MINI);
+                if (bGuiExpand)
                 {
                     if (!ui->bMinimize)
                     {
@@ -318,7 +317,7 @@ public:
                                 if (ImGui::Button("OK", ImVec2(120, 2 * _h)))
                                 {
                                     ofLogNotice("ofxSurfingPresetsLite") << "CLEAR";
-                                    doClearPresets();
+                                    doClearKit();
                                     ImGui::CloseCurrentPopup();
                                 }
                                 ImGui::SetItemDefaultFocus();
@@ -331,7 +330,7 @@ public:
                             else
                             {
                                 ofLogNotice("ofxSurfingPresetsLite") << "CLEAR";
-                                doClearPresets(false);
+                                doClearKit(false);
                                 ImGui::CloseCurrentPopup();
 
                                 if (bOverInputText) bOverInputText = false;
@@ -346,13 +345,13 @@ public:
                         {
                             if (bOverInputText) bOverInputText = false;
 
-                            doPopulatePresets();
+                            doPopulateKit();
                         }
                         ui->AddTooltip("Clear Kit and create \nNew Presets copying current");
 
                         //--
 
-                        //ui->Add(vScan, OFX_IM_BUTTON_SMALL, 2);//should be automatic!
+                        //ui->Add(vScanKit, OFX_IM_BUTTON_SMALL, 2);//should be automatic!
                     }
                     else // minimized
                     {
@@ -367,23 +366,23 @@ public:
                         {
                             if (ui->Add(vNew, OFX_IM_BUTTON_SMALL, 2))
                             {
-                                doNewPreset();
+                                //doNewPreset();
 
-                                //if (!bOverInputText) bOverInputText = true;
+                                ////if (!bOverInputText) bOverInputText = true;
 
-                                //// default name
-                                //_namePreset = "";
+                                ////// default name
+                                ////_namePreset = "";
 
-                                //// auto name
-                                //string _n = ofToString(dir.size());
-                                //bool bAvoidOverWrite = false;
-                                //for (int i = 0; i < dir.size(); i++)
-                                //{
-                                //	if (_n == dir.getName(i)) bAvoidOverWrite = true;
-                                //}
-                                //if (!bAvoidOverWrite) _namePreset = _n;
+                                ////// auto name
+                                ////string _n = ofToString(dir.size());
+                                ////bool bAvoidOverWrite = false;
+                                ////for (int i = 0; i < dir.size(); i++)
+                                ////{
+                                ////	if (_n == dir.getName(i)) bAvoidOverWrite = true;
+                                ////}
+                                ////if (!bAvoidOverWrite) _namePreset = _n;
 
-                                //setFilename(_namePreset);
+                                ////setFilename(_namePreset);
                             }
                         }
                         else
@@ -419,17 +418,19 @@ public:
                     }
                 }
 
-                if (ui->bMinimize && !bExpand)
+                if (ui->bMinimize && !bGuiExpand)
                 {
                     ui->Add(vSave, (bAutoSave ? OFX_IM_BUTTON_MEDIUM : OFX_IM_BUTTON_MEDIUM_BORDER_BLINK), 2, true);
 
                     if (ui->AddButton("<", OFX_IM_BUTTON_MEDIUM, 4, true))
                     {
-                        doLoadPrevious();
+						vPrevious.trigger();
+                        //doLoadPrevious();
                     }
                     if (ui->AddButton(">", OFX_IM_BUTTON_MEDIUM, 4, false))
                     {
-                        doLoadNext();
+						vNext.trigger();
+                        //doLoadNext();
                     }
                 }
 
@@ -437,7 +438,7 @@ public:
 
                 if (!ui->bMinimize && dir.size() > 0) ui->AddSpacingSeparated();
 
-                if (bExpand) // expanded
+                if (bGuiExpand) // expanded
                 {
                     if (ui->bMinimize)
                     {
@@ -470,11 +471,11 @@ public:
 
                         if (ui->AddButton("<", OFX_IM_BUTTON_MEDIUM, 2, true))
                         {
-                            doLoadPrevious();
+                            //doLoadPrevious();
                         };
                         if (ui->AddButton(">", OFX_IM_BUTTON_MEDIUM, 2))
                         {
-                            doLoadNext();
+                            //doLoadNext();
                         };
 
                         // float p = ui->getWidgetsSpacingX();
@@ -538,16 +539,16 @@ public:
         {
             if (!ui->bMinimize)
             {
-                ui->Add(bClicker, OFX_IM_TOGGLE_BUTTON_ROUNDED_MINI);
+                ui->Add(bGuiClicker, OFX_IM_TOGGLE_BUTTON_ROUNDED_MINI);
                 ui->AddSpacing();
             }
         }
         else
         {
-            if (!bClicker) bClicker = true;
+            if (!bGuiClicker) bGuiClicker = true;
         }
 
-        if (bClicker)
+        if (bGuiClicker)
         {
             if (ui->bMinimize && !bMinimal) ui->AddSpacingSeparated();
 
@@ -560,20 +561,20 @@ public:
             bool bFlip = false;
 
             string toolTip = "";
-            if (bKeyCtrl) toolTip = "Copy To";
-            else if (bKeyAlt) toolTip = "Swap With";
+            if (bKeyModCtrl) toolTip = "Copy To";
+            else if (bKeyModAlt) toolTip = "Swap With";
 
-            if (bUseColorizedMatrices)
+            if (bGuiColorized)
             {
                 ofxImGuiSurfing::AddMatrixClickerLabels(index, keyCommandsChars, colors, bResponsiveButtonsClicker,
-                                                        amountButtonsPerRowClicker, true, _h2, toolTip, bFlip);
+                                                        guiAmountRow, true, _h2, toolTip, bFlip);
             }
             else
             {
                 ofxImGuiSurfing::AddMatrixClickerLabels(index, keyCommandsChars, bResponsiveButtonsClicker,
-                                                        amountButtonsPerRowClicker, true, _h2, toolTip, bFlip);
+                                                        guiAmountRow, true, _h2, toolTip, bFlip);
             }
-            if (bExpand)
+            if (bGuiExpand)
             {
                 if (dir.size() > 0)
                 {
@@ -582,7 +583,7 @@ public:
                         ui->AddSpacing();
                         if (!ui->bMinimize)
                         {
-                            ui->Add(amountButtonsPerRowClicker, OFX_IM_STEPPER, 2);
+                            ui->Add(guiAmountRow, OFX_IM_STEPPER, 2);
                             ui->AddTooltip("Buttons per row.");
                         }
                     }
@@ -607,20 +608,17 @@ public:
     // exposed to trig an external method
     ofParameter<void> vReset{"Reset"};
     ofParameter<void> vRandom{"Random"};
-
     ofParameter<int> index{"Index", 0, 0, 0};
-
-    ofParameter<int> amountButtonsPerRowClicker{"Row", 1, 1, 4};
-
-	ofParameter<bool> bFloating { "Floating", true };
+    ofParameter<int> guiAmountRow{"Row", 1, 1, 4};
+	ofParameter<bool> bGuiFloating { "Floating", true };
 
     //--
 
     ofParameter<bool> bGui{"PRESETS", true};
 
-    void setToggleVisibleGui() { bGui = !bGui; }
-    void setVisibleGui(bool b) { bGui = b; }
-    bool getVisibleGui() { return bGui; }
+    void setToggleGuiVisible() { bGui = !bGui; }
+    void setGuiVisible(bool b) { bGui = b; }
+    bool getGuiVisible() { return bGui; }
 
     //--
 
@@ -630,15 +628,15 @@ private:
     ofParameter<void> vPrevious{"<"};
     ofParameter<void> vNext{">"};
     ofParameter<void> vRename{"Rename"};
-    ofParameter<void> vScan{"Scan"};
+    ofParameter<void> vScanKit{"Scan"};
     ofParameter<void> vDelete{"Delete"};
     ofParameter<void> vSave{"Save"};
     ofParameter<void> vLoad{"Load"};
     ofParameter<void> vNew{"New"};
 
-    ofParameter<bool> bClicker{"CLICKER", false};
+    ofParameter<bool> bGuiClicker{"CLICKER", false};
     ofParameter<bool> bAutoSave{"AutoSave", true};
-    ofParameter<bool> bExpand{"Expand", false};
+    ofParameter<bool> bGuiExpand{"Expand", false};
 
     //public:
 private:
@@ -646,20 +644,20 @@ private:
     {
         ofLogNotice("ofxSurfingPresetsLite") << "setup";
 
-        doRefreshFiles(); //TODO:
+        doRefreshKitFiles(); //TODO:
     }
 
     void startup()
     {
         ofLogNotice("ofxSurfingPresetsLite") << "startup";
 
-        doRefreshFiles();
+        doRefreshKitFiles();
 
         index_PRE = -1; // pre
 
         string s;
-        if (path_Global == "") s = path_Settings;
-        else s = path_Global + "/" + path_Settings;
+        if (path == "") s = pathSettings;
+        else s = path + "/" + pathSettings;
         ofxSurfingHelpers::loadGroup(params, s);
 
         //index = index;
@@ -668,7 +666,7 @@ private:
 
         //TODO:
         // matrix colors
-        if (bUseColorizedMatrices)
+        if (bGuiColorized)
         {
             colors.clear();
             keyCommandsChars.clear();
@@ -713,7 +711,7 @@ private:
         ofxSurfingHelpers::CheckFolder(pathPresets);
 
         // Save Settings
-        ofxSurfingHelpers::saveGroup(params_Preset, pathPresets + "/" + filename + ".json");
+        ofxSurfingHelpers::saveGroup(paramsPreset, pathPresets + "/" + filename + ".json");
     }
 
     void doLoad()
@@ -723,7 +721,7 @@ private:
         if (bDoingNew) bDoingNew = false;
 
         // Load Settings
-        ofxSurfingHelpers::loadGroup(params_Preset, pathPresets + "/" + filename + ".json");
+        ofxSurfingHelpers::loadGroup(paramsPreset, pathPresets + "/" + filename + ".json");
     }
 
 
@@ -731,7 +729,7 @@ private:
     //{
     //	ofLogNotice("ofxSurfingPresetsLite") << (__FUNCTION__);
     //	// Load Settings
-    //	ofxSurfingHelpers::loadGroup(params_Preset, pathPresets + "/" + filename + ".json");
+    //	ofxSurfingHelpers::loadGroup(paramsPreset, pathPresets + "/" + filename + ".json");
     //}
 
     //void doResetParams()
@@ -745,7 +743,7 @@ private:
     //-
 
 public:
-    void AddGroup(ofParameterGroup& group)
+    void addGroup(ofParameterGroup& group)
     {
         // make a pointer, bc maybe that = no works well..
 
@@ -753,25 +751,25 @@ public:
         bool isGroup = ptype == typeid(ofParameterGroup).name();
         if (isGroup)
         {
-            params_Preset = group;
+            paramsPreset = group;
         }
 
-        string s = params_Preset.getName();
+        string s = paramsPreset.getName();
         s += ofToString("_ofxSurfingPresetsLite_Settings.json");
         // s += ofToString("_Settings.json");
-        path_Settings = s;
+        pathSettings = s;
 
         setup();
     }
 
-    void setPathGlobal(std::string path)
+    void setPath(std::string path)
     {
-        path_Global = path;
-        ofxSurfingHelpers::CheckFolder(path_Global);
+        path = path;
+        ofxSurfingHelpers::CheckFolder(path);
     }
 
 private:
-    std::string path_Global = ""; //main folder where nested folder goes inside
+    std::string path = ""; //main folder where nested folder goes inside
 
 public:
     void setPath(string p)
@@ -845,7 +843,7 @@ private:
 
                 // 1. Common Load but AutoSave
 
-                if (!bKeyCtrl && !bKeyAlt) // Ctrl nor Alt not pressed
+                if (!bKeyModCtrl && !bKeyModAlt) // Ctrl nor Alt not pressed
                 {
                     // Autosave
 
@@ -885,7 +883,7 @@ private:
                 // Save to clicked preset index
                 // Ctrl pressed. Alt not pressed
 
-                else if (bKeyCtrl && !bKeyAlt)
+                else if (bKeyModCtrl && !bKeyModAlt)
                 {
                     if (index < filenames.size())
                     {
@@ -909,7 +907,7 @@ private:
                 // (from/to) pre/current index
                 // Ctrl not pressed. Alt pressed
 
-                else if (!bKeyCtrl && bKeyAlt)
+                else if (!bKeyModCtrl && bKeyModAlt)
                 {
                     if (dir.size() > 0 && index < filenames.size() && index_PRE < filenames.size())
                     {
@@ -990,7 +988,7 @@ private:
 
             // scan
             string filename_ = filename;
-            doRefreshFiles();
+            doRefreshKitFiles();
 
             //if (filename_ != filename)
             if (num != getNumFiles())
@@ -1008,9 +1006,9 @@ private:
             }
         }
 
-        else if (name == vScan.getName())
+        else if (name == vScanKit.getName())
         {
-            doRefreshFiles();
+            doRefreshKitFiles();
         }
 
         else if (name == vDelete.getName())
@@ -1019,7 +1017,7 @@ private:
 
             //filename = filenames[index];
             ofFile::removeFile(pathPresets + "/" + filename + ".json");
-            doRefreshFiles();
+            doRefreshKitFiles();
 
             index = index;
             //doLoad();
@@ -1033,7 +1031,7 @@ private:
             // remove
             //filename = filenames[index];
             ofFile::removeFile(pathPresets + "/" + filename + ".json");
-            doRefreshFiles();
+            doRefreshKitFiles();
 
             // make new
             */
@@ -1044,7 +1042,7 @@ private:
 
 private:
     ofParameterGroup params{"ofxSurfingPresetsLite"};
-    ofParameterGroup params_Preset{"Preset"};
+    ofParameterGroup paramsPreset{"Preset"};
 
     string pathPresets = "ofxSurfingPresetsLite";
 
@@ -1066,10 +1064,10 @@ private:
         return filenames.size();
     }
 
-    bool doRefreshFiles()
+    bool doRefreshKitFiles()
     {
         // Load dragged images folder
-        ofLogNotice("ofxSurfingPresetsLite") << "doRefreshFiles: list files " << pathPresets;
+        ofLogNotice("ofxSurfingPresetsLite") << "doRefreshKitFiles: list files " << pathPresets;
 
         bool b = false;
 
@@ -1111,9 +1109,9 @@ private:
         return b;
     }
 
-    void doClearPresets(bool createOne = true)
+    void doClearKit(bool createOne = true)
     {
-        ofLogNotice("ofxSurfingPresetsLite") << "doClearPresets";
+        ofLogNotice("ofxSurfingPresetsLite") << "doClearKit";
 
         // Remove all files
         for (int i = 0; i < dir.size(); i++)
@@ -1121,7 +1119,7 @@ private:
             ofFile file = dir[i];
             file.remove();
         }
-        doRefreshFiles();
+        doRefreshKitFiles();
 
         if (createOne) doNewPreset();
         if (bOverInputText) bOverInputText = false;
@@ -1162,11 +1160,11 @@ private:
         setFilename(_namePreset);
     }
 
-    void doPopulatePresets(int amount = 9)
+    void doPopulateKit(int amount = 9)
     {
-        ofLogNotice("ofxSurfingPresetsLite") << "doPopulatePresets";
+        ofLogNotice("ofxSurfingPresetsLite") << "doPopulateKit";
 
-        doClearPresets(false);
+        doClearKit(false);
 
         int _max;
         if (amount == -1)
@@ -1181,13 +1179,13 @@ private:
             //index = i;
             doNewPreset();
             doSave();
-            doRefreshFiles();
+            doRefreshKitFiles();
         }
 
         //// Workflow
-        //amountButtonsPerRowClicker.setMax(_max);
+        //guiAmountRow.setMax(_max);
         //amountButtonsPerRowClickerMini.setMax(_max);
-        //amountButtonsPerRowClicker.set(_max / 3);
+        //guiAmountRow.set(_max / 3);
         //amountButtonsPerRowClickerMini.set(_max / 3);
 
         // Workflow
@@ -1217,7 +1215,7 @@ private:
         ofLogNotice("ofxSurfingPresetsLite") << (__FUNCTION__);
 
 
-        for (int i = 0; i < params_Preset.size(); i++)
+        for (int i = 0; i < paramsPreset.size(); i++)
             //for (auto p : editorEnablers)
         {
             auto p = true;//only reset this iterated param if it's enabled
@@ -1225,12 +1223,12 @@ private:
             //-
 
             //std::string name = p.getName();//name
-            std::string name = params_Preset[i].getName();//name
-            //auto& g = params_Preset.getGroup(name);//ofParameterGroup
-            //auto& g = params_Preset.getGroup(name);//ofParameterGroup
-            auto& g = params_Preset;//ofParameterGroup
+            std::string name = paramsPreset[i].getName();//name
+            //auto& g = paramsPreset.getGroup(name);//ofParameterGroup
+            //auto& g = paramsPreset.getGroup(name);//ofParameterGroup
+            auto& g = paramsPreset;//ofParameterGroup
             auto& e = g.get(name);//ofAbstractParameter
-            //auto& e = params_Preset.get(name);//ofAbstractParameter
+            //auto& e = paramsPreset.get(name);//ofAbstractParameter
 
             auto type = e.type();
             bool isFloat = type == typeid(ofParameter<float>).name();
@@ -1414,11 +1412,11 @@ private:
 
         //TODO:
         // this is not recursive inside the group content!
-        // get solution from ImHelpers. AddGroup iterate groups
+        // get solution from ImHelpers. addGroup iterate groups
 
-        for (int i = 0; i < params_Preset.size(); i++)
+        for (int i = 0; i < paramsPreset.size(); i++)
         {
-            auto& p = params_Preset[i];
+            auto& p = paramsPreset[i];
 
             if (p.type() == typeid(ofParameter<float>).name())
             {
@@ -1456,9 +1454,9 @@ private:
     {
         ofLogNotice("ofxSurfingPresetsLite") << "doResetParams";
 
-        for (int i = 0; i < params_Preset.size(); i++)
+        for (int i = 0; i < paramsPreset.size(); i++)
         {
-            auto& p = params_Preset[i];
+            auto& p = paramsPreset[i];
 
             if (p.type() == typeid(ofParameter<float>).name())
             {
@@ -1502,8 +1500,8 @@ private:
         bool mod_ALT = eventArgs.hasModifier(OF_KEY_ALT);
         bool mod_SHIFT = eventArgs.hasModifier(OF_KEY_SHIFT);
 
-        if (mod_CONTROL) bKeyCtrl = true;
-        if (mod_ALT) bKeyAlt = true;
+        if (mod_CONTROL) bKeyModCtrl = true;
+        if (mod_ALT) bKeyModAlt = true;
     }
 
     //--------------------------------------------------------------
@@ -1518,8 +1516,8 @@ private:
         bool mod_ALT = eventArgs.hasModifier(OF_KEY_ALT);
         bool mod_SHIFT = eventArgs.hasModifier(OF_KEY_SHIFT);
 
-        if (!mod_CONTROL) bKeyCtrl = false;
-        if (!mod_ALT) bKeyAlt = false;
+        if (!mod_CONTROL) bKeyModCtrl = false;
+        if (!mod_ALT) bKeyModAlt = false;
 
         //if (!bKeys) return;
     }
