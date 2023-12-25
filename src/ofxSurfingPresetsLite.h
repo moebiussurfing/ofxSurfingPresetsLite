@@ -7,24 +7,13 @@
 //--
 
 /*
-	BUG:
-	Seems that overwrites presets..
-
 	TODO:
+
+	add bGui for params window.
 	improve first name.
 		new auto set name to be faster
-	add settings state for gui
-	add auto save
 	add rename preset
-	add copy/swap?
-	add save files
-	search file listers from surfingPresets
 */
-
-//----
-
-#define OFX_SURFING_PRESETS_LITE__DISABLE_WORKFLOW
-// that removes all preset files or creates new ones if not present or first startup.
 
 //----
 
@@ -33,7 +22,7 @@ public:
 	ofxSurfingPresetsLite() {
 		ofLogNotice("ofxSurfingPresetsLite") << "Constructor";
 
-		ofAddListener(params.parameterChangedE(), this, &ofxSurfingPresetsLite::Changed);
+		ofAddListener(parameters.parameterChangedE(), this, &ofxSurfingPresetsLite::Changed);
 		ofAddListener(ofEvents().update, this, &ofxSurfingPresetsLite::update);
 		ofAddListener(ofEvents().exit, this, &ofxSurfingPresetsLite::exit);
 
@@ -45,7 +34,7 @@ public:
 	~ofxSurfingPresetsLite() {
 		ofLogNotice("ofxSurfingPresetsLite") << "Destructor";
 
-		ofRemoveListener(params.parameterChangedE(), this, &ofxSurfingPresetsLite::Changed);
+		ofRemoveListener(parameters.parameterChangedE(), this, &ofxSurfingPresetsLite::Changed);
 		ofRemoveListener(ofEvents().update, this, &ofxSurfingPresetsLite::update);
 		ofRemoveListener(ofEvents().exit, this, &ofxSurfingPresetsLite::exit);
 
@@ -64,18 +53,19 @@ private:
 		else
 			s = pathGlobal + "/" + pathSettings;
 
-		ofxSurfing::saveGroup(params, s);
+		ofxSurfing::saveGroup(parameters, s);
 
 		doSave();
 	}
 
-public:
-	// Customize global name
-	// to avoid that window name collides
+private:
+//public:
+// 	   //TODO: fix
+	// Customize name to avoid window names colliding 
 	// with other preset manager instances
 	//--------------------------------------------------------------
-	void setName(string s) {
-		bGui.setName(s);
+	void setNameUI(string s) {
+		bGui.set(ofToString("UI ") + s, true);
 	}
 
 private:
@@ -83,14 +73,6 @@ private:
 	bool bDoneStartup = false;
 
 	//----
-
-protected:
-	vector<char> keyCommandsChars;
-	vector<ofColor> colors;
-	bool bGuiColorized = false;
-
-public:
-	void setGuiColorized(bool b) { bGuiColorized = b; }
 
 protected:
 	bool bKeyModCtrl = false;
@@ -104,15 +86,18 @@ public:
 
 	ofParameter<int> index { "Index", -1, -1, -1 };
 	ofParameter<string> indexName { "Name", "NONE" };
+	ofParameter<bool> bCycled { "Cycled", true };
 
 private:
 	int index_PRE = -1; // pre
 
 public:
-	ofParameter<bool> bGuiClicker { "CLICKER", false };
-	ofParameter<bool> bGuiFloating { "FLOATING", true };
 	ofParameter<bool> bGui { "PRESETS", true };
-	ofParameter<int> guiRowAmount { "Row", 1, 1, 6 };
+	ofParameter<bool> bGuiParams { "UI PARAMS", true };
+	ofParameter<bool> bGuiClicker { "UI CLICKER", false };
+	ofParameter<bool> bGuiFloating { "Floating", true };
+	ofParameter<bool> bGuiExpand { "Expand", false };
+	ofParameter<int> guiRowSz { "Row Sz", 1, 1, 6 };
 
 	void setToggleGuiVisible() { bGui = !bGui; }
 	void setGuiVisible(bool b = true) { bGui = b; }
@@ -134,9 +119,8 @@ protected:
 	ofParameter<void> vClearKit { "Clear" };
 	ofParameter<void> vPopulateKit { "Populate" };
 	ofParameter<void> vPopulateRandomKit { "Populate Random" };
-	ofParameter<bool> bAutoSave { "AutoSave", true }; // edit mode
 
-	ofParameter<bool> bGuiExpand { "Expand", false };
+	ofParameter<bool> bAutoSave { "AutoSave", true }; // edit mode
 	ofParameter<bool> bKeys { "Keys", true };
 	ofParameter<bool> bHelp { "Help", true };
 
@@ -159,38 +143,42 @@ private:
 
 		indexName.setSerializable(false);
 
-		paramsUI.add(bGuiClicker);
-		params.add(paramsUI);
+		//paramsUI.add(bGuiClicker);
+		//params.add(paramsUI);
+		//paramsBrowse.add(indexName);
+		//paramsManager.add(vRename);
 
 		paramsBrowse.add(index);
 		paramsBrowse.add(vNext);
 		paramsBrowse.add(vPrevious);
-		paramsBrowse.add(indexName);
-		params.add(paramsBrowse);
 
 		paramsManager.add(vSave);
 		paramsManager.add(vLoad);
-		paramsManager.add(vDelete);
 		paramsManager.add(vNew);
+		paramsManager.add(vDelete);
 		paramsManager.add(vRandom);
 		paramsManager.add(vReset);
 		paramsManager.add(bAutoSave);
-		paramsManager.add(vRename);
-		params.add(paramsManager);
 
-		paramsKit.add(vClearKit);
 		paramsKit.add(vScanKit);
+		paramsKit.add(vClearKit);
 		paramsKit.add(vPopulateKit);
 		paramsKit.add(vPopulateRandomKit);
-		params.add(paramsKit);
 
+		paramsInternal.add(bGuiParams);
+		paramsInternal.add(bGuiClicker);
 		paramsInternal.add(bGuiFloating);
 		paramsInternal.add(bGuiExpand);
-		paramsInternal.add(guiRowAmount);
+		paramsInternal.add(guiRowSz);
+		paramsInternal.add(bCycled);
 		paramsInternal.add(bGui);
-		paramsInternal.add(bHelp);
-		paramsInternal.add(bKeys);
-		params.add(paramsInternal);
+
+		parameters.add(paramsBrowse);
+		parameters.add(paramsManager);
+		parameters.add(paramsKit);
+		parameters.add(paramsInternal);
+		parameters.add(bHelp);
+		parameters.add(bKeys);
 	}
 
 	virtual void setupGui() {
@@ -210,28 +198,10 @@ private:
 		else
 			s = pathGlobal + "\\" + pathSettings;
 
-		ofxSurfing::loadGroup(params, s);
+		ofxSurfing::loadGroup(parameters, s);
 
-		//--
-
-		//TODO:
-		// matrix colors
-		if (bGuiColorized) {
-			colors.clear();
-			keyCommandsChars.clear();
-			for (size_t i = 0; i < 9; i++) {
-				ofColor c;
-				if (i < 3)
-					c = ofColor::green;
-				else if (i < 6)
-					c = ofColor::yellow;
-				else if (i < 10)
-					c = ofColor::red;
-
-				colors.push_back(c);
-			}
-			keyCommandsChars = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
-		}
+		//buildHelp();
+		bFlagBuildHelp = true;
 
 		bDoneStartup = true;
 	}
@@ -240,37 +210,45 @@ private:
 		if (!bDoneStartup) {
 			startup();
 		}
+
+		if (bFlagBuildHelp) {
+			bFlagBuildHelp = false;
+			buildHelp();
+		}
 	}
 
 	void draw() {
 	}
 
+protected:
+	string sHelp = "";
+	bool bFlagBuildHelp = false;
+
 public:
-	void drawHelp() {
+	void buildHelp() {
+		sHelp = "";
+		sHelp += "PRESETS\nMANAGER\n";
+		sHelp += "\n";
+		sHelp += "LEFT/RIGHT  Browse\n";
+		sHelp += "UP/DOWN\n";
+		sHelp += "\n";
+		sHelp += "BACKSPACE   Random\n";
+		sHelp += "+Ctrl       Reset\n";
+		sHelp += "\n";
+		sHelp += "RETURN      New add\n";
+		sHelp += "+Ctrl       New name\n";
+		sHelp += "\n";
+		sHelp += "Preset\n";
+		sHelp += ofToString(getPresetIndex()) + "/" + ofToString(getPresetIndexLast()) + "\n";
+		sHelp += "\n";
+		sHelp += "Path:\n";
+		sHelp += pathPresets;
+	}
+
+	virtual void drawHelp() {
 		if (!bHelp) return;
 
-		string s = "";
-		s += "PRESETS\nMANAGER\n";
-		s += "\n";
-		s += "LEFT/RIGHT  Browse\n";
-		s += "UP/DOWN\n";
-		s += "BACKSPACE   Random\n";
-		s += "+Ctrl       Reset\n";
-		s += "RETURN      New add\n";
-		s += "+Ctrl       New name\n";
-		s += "\n";
-		s += "Preset:\n";
-		s += ofToString(getPresetIndex()) + "/" + ofToString(getPresetIndexLast()) + "\n";
-		s += "\n";
-		if (pathGlobal != "") {
-			s += "Path Global:\n";
-			s += pathGlobal;
-			s += "\n";
-		}
-		s += "Path Files:\n";
-		s += pathPresets;
-
-		ofxSurfing::ofDrawBitmapStringBox(s, ofxSurfing::SURFING_LAYOUT_BOTTOM_RIGHT);
+		ofxSurfing::ofDrawBitmapStringBox(sHelp, ofxSurfing::SURFING_LAYOUT_BOTTOM_RIGHT);
 	}
 
 	//--
@@ -285,7 +263,7 @@ private:
 		ofxSurfing::checkFolderOrCreate(pathPresets);
 
 		// Save Settings
-		ofxSurfing::saveGroup(paramsPreset, pathPresets + "/" + filename + ".json");
+		ofxSurfing::saveGroup(paramsPreset, pathPresets + "\\" + filename + ".json");
 	}
 
 	void doLoad() {
@@ -294,7 +272,7 @@ private:
 		if (bDoingNew) bDoingNew = false;
 
 		// Load Settings
-		ofxSurfing::loadGroup(paramsPreset, pathPresets + "/" + filename + ".json");
+		ofxSurfing::loadGroup(paramsPreset, pathPresets + "\\" + filename + ".json");
 
 		//TODO
 		//indexName.set(filename);
@@ -312,24 +290,43 @@ public:
 			paramsPreset = group;
 		}
 
-		name = paramsPreset.getName();
-		setName("PRESETS " + name);
+		name = group.getName();
+		setNameUI(name);
+		parameters.setName(ofToString("PRESETS ") + name);
 
-		string s = paramsPreset.getName();
-		s += ofToString("_Presets.json");
-		pathSettings = s;
+		pathSettings = name + ofToString("_Presets.json");
 
 		setup();
 	}
 
+	/*
+	* Example:
+	* Two ways for setting this path:
+	// data\TEXT\Presets\xx.json
+	//
+	// 1.
+	//presetsManager.setPathGlobal("TEXT");//parent folder
+	//presetsManager.setPathPresets("Presets");//presets folder
+	//
+	// 2.
+	presetsManager.setPathPresets("TEXT\\Presets");//you can call only this too!
+	*/
+
+	// must be settled before setting pathPresets. Must call setPathPresets after this too.
 	void setPathGlobal(string p) {
 		pathGlobal = p;
 		ofxSurfing::checkFolderOrCreate(pathGlobal);
 	}
 
 public:
+	// related to inside pathGlobal. Must call setPathGlobal before this too.
 	void setPathPresets(string p) {
-		pathPresets = p + "/Presets";
+		//pathPresets = p + "\\Presets";
+		if (pathGlobal != "")
+			pathPresets = pathGlobal + "\\" + p + "\\";
+		else
+			pathPresets = p + "\\";
+
 		ofxSurfing::checkFolderOrCreate(pathPresets);
 		ofLogNotice("ofxSurfingPresetsLite") << "setPathPresets(): " << pathPresets;
 	}
@@ -346,8 +343,10 @@ public:
 		if (index > index.getMin())
 			index--;
 		else if (index == index.getMin())
-			index = index.getMin();
-		//index = index.getMax();
+			if (bCycled)
+				index = index.getMax();
+			else
+				index = index.getMin();
 	}
 
 	void doLoadNext() {
@@ -357,8 +356,10 @@ public:
 		if (index < index.getMax())
 			index++;
 		else if (index == index.getMax())
-			index = index.getMax();
-		//index = index.getMin();
+			if (bCycled)
+				index = index.getMin();
+			else
+				index = index.getMax();
 	}
 
 private:
@@ -366,6 +367,9 @@ private:
 		string name = e.getName();
 
 		ofLogNotice("ofxSurfingPresetsLite") << "Changed: " << name << ": " << e;
+
+		//buildHelp();
+		bFlagBuildHelp = true;
 
 		if (name == index.getName()) {
 			// clamp inside dir files amount limits
@@ -378,8 +382,8 @@ private:
 
 				if (index_PRE != -1) {
 					if (index_PRE < filenames.size() && index < filenames.size()) {
-						ofLogNotice("ofxSurfingPresetsLite") << "Changed: Preset Index: " << ofToString(index_PRE) << " > " << ofToString(index) << "      \t(" << ofToString(filenames[index_PRE]) << " > " << ofToString(filenames[index]) << ")"
-															 << "\n";
+						ofLogNotice("ofxSurfingPresetsLite") << "Changed: Preset Index: " << ofToString(index_PRE) << " > " << ofToString(index);
+						ofLogNotice("ofxSurfingPresetsLite") << "\t(" << ofToString(filenames[index_PRE]) << " > " << ofToString(filenames[index]) << ")\n";
 					}
 				}
 
@@ -449,8 +453,8 @@ private:
 						string _fTo = filenames[index];
 						ofFile f;
 
-						_fTo = pathPresets + "/" + _fTo + ".json";
-						_fFrom = pathPresets + "/" + _fFrom + ".json";
+						_fTo = pathPresets + "\\" + _fTo + ".json";
+						_fFrom = pathPresets + "\\" + _fFrom + ".json";
 
 						bool bf = f.open(_fTo);
 						bool bt = f.renameTo(_fFrom, true, true);
@@ -571,11 +575,11 @@ private:
 	//--
 
 public:
-	ofParameterGroup params { "PresetsLite" };
+	ofParameterGroup parameters { "PRESETS MANAGER" };
 	ofParameterGroup paramsBrowse { "Browse" };
 	ofParameterGroup paramsManager { "Manager" };
 	ofParameterGroup paramsKit { "Kit" };
-	ofParameterGroup paramsUI { "UI" };
+	//ofParameterGroup paramsUI { "UI" };
 	ofParameterGroup paramsInternal { "Internal" };
 	ofParameterGroup paramsPreset { "Preset" };
 
@@ -673,7 +677,7 @@ protected:
 
 		if (filenames.size() == 0) return;
 
-		ofFile::removeFile(pathPresets + "/" + filename + ".json");
+		ofFile::removeFile(pathPresets + "\\" + filename + ".json");
 		doRefreshKitFiles();
 
 		//nameIndex = filenames[index];
@@ -717,7 +721,7 @@ protected:
 		/*
         // remove
         //filename = filenames[index];
-        ofFile::removeFile(pathPresets + "/" + filename + ".json");
+        ofFile::removeFile(pathPresets + "\\" + filename + ".json");
         doRefreshKitFiles();
         // make new
         */
@@ -728,7 +732,8 @@ protected:
 		// create new
 		if (!bOverInputText) bOverInputText = true;
 		indexName = "";
-		setFilename(indexName);
+
+		setFilename("");
 	}
 
 	void doClearKit(bool createOne = true) {
@@ -1109,15 +1114,15 @@ private:
 		if (key == OF_KEY_LEFT) doLoadPrevious();
 		if (key == OF_KEY_RIGHT) doLoadNext();
 		if (key == OF_KEY_UP) {
-			if (index < guiRowAmount) return;
+			if (index < guiRowSz) return;
 			int i = index;
-			i = i - guiRowAmount;
+			i = i - guiRowSz;
 			index = ofClamp(i, index.getMin(), index.getMax());
 		}
 		if (key == OF_KEY_DOWN) {
-			if (index > index.getMax() - guiRowAmount) return;
+			if (index > index.getMax() - guiRowSz) return;
 			int i = index;
-			i = i + guiRowAmount;
+			i = i + guiRowSz;
 			index = ofClamp(i, index.getMin(), index.getMax());
 		}
 

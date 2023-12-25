@@ -13,9 +13,36 @@ class ofxSurfingPresetsLiteImGui : public ofxSurfingPresetsLite {
 private:
 	ofxSurfingGui * ui = nullptr;
 
+protected:
+	vector<char> keyCommandsChars;
+	vector<ofColor> colors;
+	bool bGuiColorized = false;
+
+public:
+	void setGuiColorized(bool b) { bGuiColorized = b; }
+
 public:
 	void setUiPtr(ofxSurfingGui * _ui) {
 		ui = _ui;
+
+		//TODO:
+		// matrix colors
+		if (bGuiColorized) {
+			colors.clear();
+			keyCommandsChars.clear();
+			for (size_t i = 0; i < 9; i++) {
+				ofColor c;
+				if (i < 3)
+					c = ofColor::green;
+				else if (i < 6)
+					c = ofColor::yellow;
+				else if (i < 10)
+					c = ofColor::red;
+
+				colors.push_back(c);
+			}
+			keyCommandsChars = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+		}
 	}
 
 	//----
@@ -293,17 +320,17 @@ public:
 
 			if (bGuiColorized) {
 				ofxImGuiSurfing::AddMatrixClickerLabels(index, keyCommandsChars, colors, bResponsiveButtonsClicker,
-					guiRowAmount, true, _h2, toolTip, bFlip);
+					guiRowSz, true, _h2, toolTip, bFlip);
 			} else {
 				ofxImGuiSurfing::AddMatrixClickerLabels(index, keyCommandsChars, bResponsiveButtonsClicker,
-					guiRowAmount, true, _h2, toolTip, bFlip);
+					guiRowSz, true, _h2, toolTip, bFlip);
 			}
 			if (bGuiExpand) {
 				if (dir.size() > 0) {
 					if (!bMinimal && !ui->bMinimize) {
 						ui->AddSpacing();
 						if (!ui->bMinimize) {
-							ui->Add(guiRowAmount, OFX_IM_STEPPER, 2);
+							ui->Add(guiRowSz, OFX_IM_STEPPER, 2);
 							ui->AddTooltip("Buttons per row.");
 						}
 					}
