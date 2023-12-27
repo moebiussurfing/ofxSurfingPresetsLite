@@ -1,6 +1,13 @@
 #pragma once
 #include "ofMain.h"
 
+/*
+
+TODO
+	add kit selector and naming
+	add custom namnes ?
+*/
+
 //--
 
 #include "ofxSurfingPresetsLite.h"
@@ -10,6 +17,14 @@
 //----
 
 class ofxSurfingPresetsLiteImGui : public ofxSurfingPresetsLite {
+protected:
+	virtual void destructUI() override {
+		ofLogNotice("ofxSurfingPresetsLiteImGui") << "destructUI()";
+
+		delete ui;
+		ui = nullptr;
+	}
+
 private:
 	ofxSurfingGui * ui = nullptr;
 
@@ -17,40 +32,273 @@ public:
 	void setUiPtr(ofxSurfingGui * _ui) {
 		ui = _ui;
 
-		//TODO:
-		// matrix colors
-		if (bGuiColorized) {
-			colors.clear();
-			for (size_t i = 0; i < 9; i++) {
-				ofColor c;
-				if (i < 3)
-					c = ofColor::green;
-				else if (i < 6)
-					c = ofColor::yellow;
-				else if (i < 10)
-					c = ofColor::red;
+		setupParametersExtra();
+	}
 
+	void setupParameters() override {
+		ofLogNotice("ofxSurfingPresetsLiteImGui") << "setupParameters()";
+
+		indexName.setSerializable(false);
+		paramsKit.setSerializable(false);
+
+		paramsBrowse.add(index);
+		paramsBrowse.add(vNext);
+		paramsBrowse.add(vPrevious);
+
+		paramsManager.add(vSave);
+		paramsManager.add(vLoad);
+		paramsManager.add(vNew);
+		paramsManager.add(vDelete);
+		paramsManager.add(vRandom);
+		paramsManager.add(vReset);
+		paramsManager.add(bAutoSave);
+
+		paramsKit.add(vScanKit);
+		paramsKit.add(vClearKit);
+		paramsKit.add(vPopulateKit);
+		paramsKit.add(vPopulateRandomKit);
+
+		paramsInternal.add(bGuiParams);
+		paramsInternal.add(bGuiClicker);
+		paramsInternal.add(bGuiFloating);
+		paramsInternal.add(bGuiExpand);
+		paramsInternal.add(numPresetsForPopulating);
+		paramsInternal.add(numColumnsPerRow);
+		paramsInternal.add(bFlip);
+		paramsInternal.add(bCycled);
+		paramsInternal.add(bGuiColorized);
+		paramsInternal.add(bMinimalMode);
+		paramsInternal.add(bGui);
+
+		parameters.add(paramsBrowse);
+		parameters.add(paramsManager);
+		parameters.add(paramsKit);
+		parameters.add(paramsInternal);
+		parameters.add(bHelp);
+		parameters.add(bKeys);
+
+		setupParametersExtra();
+	}
+
+	void setupParametersExtra() override {
+		ofLogNotice("ofxSurfingPresetsLiteImGui") << "setupParametersExtra()";
+
+		e_guiNumColumnsPerRow = numColumnsPerRow.newListener([this](int & i) {
+			buildColorizer();
+		});
+
+		e_bGuiColorized = bGuiColorized.newListener([this](bool & b) {
+			buildColorizer();
+		});
+
+		buildColorizer();
+	}
+
+	void buildColorizer() {
+		ofLogNotice("ofxSurfingPresetsLiteImGui") << "buildColorizer()";
+
+		// For colorize buttons on matrix preset colors
+		if (bGuiColorized) {
+
+			int numRows = 1;
+			int numPresets = getNumPresets();
+			if (numPresets > 1)
+				numRows = numPresets / numColumnsPerRow;
+
+			colors.clear();
+
+			for (size_t i = 0; i < numPresets; i++) {
+				// Calculate the row number
+				int row = i / numColumnsPerRow;
+				// Use the row number to index into colors_
+				ofColor c = colors_[row % colors_.size()];
 				colors.push_back(c);
+			}
+		}
+	}
+
+	void doLoadNextRow() override {
+		ofLogNotice("ofxSurfingPresetsLiteImGui") << "doLoadNextRow()";
+
+		if (index > index.getMax() - numColumnsPerRow) return;
+		int i = index;
+		i = i + numColumnsPerRow;
+		if (bCycled)
+			if (i > index.getMax()) i = index.getMin() + i;
+		index = ofClamp(i, index.getMin(), index.getMax());
+	}
+
+	void doLoadPreviousRow() override {
+		ofLogNotice("ofxSurfingPresetsLiteImGui") << "doLoadPreviousRow()";
+
+		if (index < numColumnsPerRow) return;
+		int i = index;
+		i = i - numColumnsPerRow;
+		if (bCycled)
+			if (i < index.getMin()) i = index.getMax() - i;
+		index = ofClamp(i, index.getMin(), index.getMax());
+	}
+
+	//----
+
+	// Draw UI
+	// main draw will all nodes/windows combined.
+	// you could use more specialized window,
+	// like for example only the preset clicker,
+	// while editing the preset parameters into their own UI.
+	void drawGui() {
+		if (!bGui) return;
+		drawHelp();
+
+		if (ui == nullptr) return;
+		//TODO: fix multi instance
+		//ui->Begin();
+
+		if (bMinimalMode) {
+			drawImGuiMinimal();
+			return;
+		}
+
+		if (bGuiParams) drawImGuiParameters();
+		if (bGuiFloating) drawImGuiManager(true);
+
+		//ui->End();
+	}
+
+	//----
+
+	// Presets clicker with different layout/styles:
+	// - windowed
+	// - foldered
+	// - only widgets to insert in other windows
+	// - minimal required widgets
+	//TODO: need fixing some combinations..
+	void drawImGuiClicker(bool bWindowed = false, bool bMinimal = false) {
+
+		bool bOpen_ = true;
+		if (bWindowed) {
+			bOpen_ = ui->BeginWindow(bGui);
+		}
+
+		//--
+
+		if (bOpen_) {
+			if (!bMinimal) {
+				if (ui->isMaximized()) {
+					ui->Add(bGuiClicker, OFX_IM_TOGGLE_BUTTON_ROUNDED_MINI);
+					//ui->Add(bGuiClickerMini, OFX_IM_TOGGLE_ROUNDED_MINI_XS);
+					ui->AddSpacing();
+				}
+			} else {
+				if (!bGuiClicker) bGuiClicker = true;
+			}
+
+			if (bGuiClicker) {
+				if (ui->isMinimized() && !bMinimal) ui->AddSpacingSeparated();
+
+				float _h2 = ui->getWidgetsHeightUnit();
+				_h2 *= 1.5f;
+
+				bool bResponsiveButtonsClicker = true;
+
+				string sTip = "";
+				if (bMod_CONTROL)
+					sTip = "Copy to...";
+				else if (bMod_ALT)
+					sTip = "Swap between..";
+				else if (bHelp)
+					sTip = "Press Ctrl/Alt\nto copy/swap";
+
+				if (bGuiColorized) {
+					ofxImGuiSurfing::AddMatrixClickerLabels(index, keyCommandsChars, colors, bResponsiveButtonsClicker,
+						numColumnsPerRow, true, _h2, sTip, bFlip);
+				} else {
+					ofxImGuiSurfing::AddMatrixClickerLabels(index, keyCommandsChars, bResponsiveButtonsClicker,
+						numColumnsPerRow, true, _h2, sTip, bFlip);
+				}
+			}
+
+			if (bGuiExpand) {
+				if (index.getMax() > -1) {
+					if (!bMinimal && ui->isMaximized()) {
+						//ui->AddSpacing();
+						ui->AddSpacingSeparated();
+
+						ui->Add(ui->bAdvanced, OFX_IM_TOGGLE_ROUNDED_MINI);
+						if (ui->bAdvanced) {
+							ui->AddSpacing();
+							ui->AddLabel(numColumnsPerRow.getName());
+							ui->Add(numColumnsPerRow, OFX_IM_STEPPER_NO_LABEL);
+							ui->AddTooltip("Buttons per row.");
+							ui->AddLabel(numPresetsForPopulating.getName());
+							ui->Add(numPresetsForPopulating, OFX_IM_STEPPER_NO_LABEL);
+							ui->AddTooltip("Amount populating presets.");
+							ui->Add(bFlip);
+							ui->Add(bCycled);
+							ui->Add(bGuiColorized);
+							ui->Add(bMinimalMode);
+							//ui->AddToggle("Foldered", bFoldered, OFX_IM_CHECKBOX);
+							ui->Add(bKeys);
+							ui->Add(bHelp);
+						}
+					}
+				}
+			}
+		}
+
+		//--
+
+		if (bWindowed) {
+			if (bOpen_) {
+				ui->EndWindow();
 			}
 		}
 	}
 
 	//----
 
-	// 1. Main window
-	// using different layouts.
-public:
-	void drawImGui(bool bWindowed = false, bool bMinimized_ = false, bool bFoldered_ = false, bool bOpen = true) {
+	// Parameters fo the preseted group
+	void drawImGuiParameters() {
+#if 1
+		string n = "PARAMETERS " + name;
+		if (ui->BeginWindow(n))
+#else
+		if (ui->BeginWindow(bGuiParams)) {
+#endif
+		{
+			ui->Add(ui->bMinimize, OFX_IM_TOGGLE_ROUNDED_SMALL);
+			ui->Add(bGuiFloating, OFX_IM_TOGGLE_ROUNDED_MINI);
+
+			ui->AddSpacingSeparated();
+
+			if (!bGuiFloating && ui->isMaximized())
+				ui->AddLabelBig("Parameters");
+			ui->AddSpacing();
+
+			ui->AddGroup(paramsPreset);
+
+			// Integrated inside another panel
+			if (!bGuiFloating) {
+				ui->AddSpacingBigSeparated();
+
+				drawImGuiManager();
+			}
+
+			ui->EndWindow();
+		}
+	}
+
+	//----
+
+	// Some windows panels also combined
+	void drawImGuiManager(bool bWindowed = false, bool bMinimized_ = false, bool bFoldered_ = false, bool bOpen = true) {
 		if (!bGui) return;
 
 		bool bOpen_ = true;
-
 		if (bWindowed) {
 			IMGUI_SUGAR__WINDOWS_CONSTRAINTSW_SMALL_LOCKED_RESIZE;
 			bOpen_ = ui->BeginWindow(bGui);
-		}
-
-		else if (bFoldered_) {
+		} else if (bFoldered_) {
 			bOpen_ = true;
 		}
 
@@ -67,18 +315,17 @@ public:
 				if (b) ui->AddSpacing();
 			}
 
-			ui->Add(ui->bMinimize, OFX_IM_TOGGLE_ROUNDED_MINI);
+			if (bGuiFloating) {
+				ui->Add(ui->bMinimize, OFX_IM_TOGGLE_ROUNDED_MINI);
+			}
 			ui->AddSpacing();
 
 			if (b) {
 				if (ui->isMaximized()) {
-					ui->Add(bGuiParams, OFX_IM_TOGGLE_ROUNDED_MINI);
+					if (bGuiFloating) ui->Add(bGuiParams, OFX_IM_TOGGLE_ROUNDED_MINI);
 					ui->Add(bGuiExpand, OFX_IM_TOGGLE_ROUNDED_MINI);
 					ui->AddSpacing();
 				}
-
-				//if (bMinimized_ || !bGuiFloating || !bGuiParams)
-				//	ui->Add(ui->bMinimize, OFX_IM_TOGGLE_ROUNDED_MINI);
 
 				// expanded
 				if (bGuiExpand) {
@@ -96,7 +343,6 @@ public:
 						ui->Add(bAutoSave, OFX_IM_TOGGLE_SMALL_BORDER_BLINK);
 						//ui->Add(vRename, OFX_IM_BUTTON_SMALL, 2, true);
 						//ui->AddTooltip("Change file name");
-						//ui->Add(bAutoSave, OFX_IM_TOGGLE_SMALL_BORDER_BLINK, 2);
 						string s_;
 						if (bAutoSave) {
 							s_ = "Edit Mode";
@@ -134,8 +380,6 @@ public:
 						ui->refreshLayout();
 						float _w2 = getWidgetsWidth(2);
 						float _h = getWidgetsHeightUnit();
-
-						//ui->AddLabel("KIT");
 
 						if (ImGui::Button("Clear", ImVec2(_w2, _h))) {
 							ImGui::OpenPopup("CLEAR KIT?");
@@ -211,8 +455,9 @@ public:
 					//--
 
 					if (bOverInputText) {
-						if (!ui->bMinimize) ui->AddSpacing();
+						if (ui->isMaximized()) ui->AddSpacing();
 
+						//TODO: use string params
 						int _w = ui->getWidgetsWidth() * 0.9f;
 						ImGui::PushItemWidth(_w);
 						{
@@ -229,8 +474,10 @@ public:
 				}
 
 				if (ui->bMinimize && !bGuiExpand) {
+					ui->PushButtonRepeat();
 					ui->Add(vPrevious, OFX_IM_BUTTON_MEDIUM, 2, true);
 					ui->Add(vNext, OFX_IM_BUTTON_MEDIUM, 2);
+					ui->PopButtonRepeat();
 				}
 
 				//--
@@ -239,31 +486,33 @@ public:
 
 				if (bGuiExpand) // expanded
 				{
+					ui->PushButtonRepeat();
+					ui->Add(vPrevious, OFX_IM_BUTTON_MEDIUM, 2, true);
+					ui->Add(vNext, OFX_IM_BUTTON_MEDIUM, 2);
+					ui->PopButtonRepeat();
 					ui->AddCombo(index, filenames);
 				} else // not expanded
 				{
-					if (!ui->bMinimize) {
+					if (ui->isMaximized()) {
+						ui->PushButtonRepeat();
 						ui->Add(vPrevious, OFX_IM_BUTTON_MEDIUM, 2, true);
 						ui->Add(vNext, OFX_IM_BUTTON_MEDIUM, 2);
+						ui->PopButtonRepeat();
 						ui->AddCombo(index, filenames);
+
 						ui->Add(vLoad, OFX_IM_BUTTON_SMALL, 2, true);
-						ui->Add(vSave, (bAutoSave ? OFX_IM_BUTTON_SMALL : OFX_IM_BUTTON_SMALL_BORDER_BLINK), 2);
+						ui->Add(vSave,
+							(bAutoSave ? OFX_IM_BUTTON_SMALL : OFX_IM_BUTTON_SMALL_BORDER_BLINK), 2);
 					}
 				}
 
 				//--
 
-				if (!ui->bMinimize) ui->AddSpacingSeparated();
+				if (ui->isMaximized()) ui->AddSpacingSeparated();
 
 				//--
 
 				drawImGuiClicker();
-
-				//if (!bGuiClickerMini) {
-				//	drawImGuiClicker();
-				//} else {
-				//	drawImGuiClicker(bWindowed, true);
-				//}
 
 				//--
 
@@ -278,142 +527,69 @@ public:
 
 	//----
 
-	// 2. Presets Clicker
+	// Minimal mode. Requires to not use the other drawGui/ImGui modes
+	// to avoid collide or re group windows!
+	void drawImGuiMinimal(bool bWindowed = true) {
+		if (bWindowed) IMGUI_SUGAR__WINDOWS_CONSTRAINTSW_LOCKED_RESIZE;
+		//TODO: must fix this imgui bug...
 
-	void drawImGuiClicker(bool bWindowed = false, bool bMinimal = false) {
+		if (ui->isMinimized()) {
+			bool bOpen = true;
 
-		bool bOpen_ = false;
-		if (bWindowed) {
-			bOpen_ = ui->BeginWindow(bGui);
-			if (!bOpen_) {
-				ui->EndWindow();
-				return;
+			if (bWindowed) {
+				bOpen = ui->BeginWindow(bGui);
 			}
-		}
 
-		//--
+			if (bOpen) {
+				ui->refreshLayout();
+				ui->PushButtonRepeat();
+				ui->Add(vPrevious, OFX_IM_BUTTON_MEDIUM, 2, true);
+				ui->Add(vNext, OFX_IM_BUTTON_MEDIUM, 2);
+				ui->PopButtonRepeat();
+				ui->AddCombo(index, filenames);
+			}
 
-		if (!bMinimal) {
-			if (!ui->bMinimize) {
-				ui->Add(bGuiClicker, OFX_IM_TOGGLE_BUTTON_ROUNDED_MINI);
-				//ui->Add(bGuiClickerMini, OFX_IM_TOGGLE_ROUNDED_MINI_XS);
-				ui->AddSpacing();
+			if (bWindowed && bOpen) {
+				ui->EndWindow();
 			}
 		} else {
-			if (!bGuiClicker) bGuiClicker = true;
-		}
-
-		if (bGuiClicker) {
-			if (ui->isMinimized() && !bMinimal) ui->AddSpacingSeparated();
-
-			float _h2 = ui->getWidgetsHeightUnit();
-			_h2 *= 1.5f;
-
-			bool bResponsiveButtonsClicker = true;
-
-			//TODO: add a public var
-			bool bFlip = false;
-
-			string sTip = "";
-			if (bMod_CONTROL)
-				sTip = "Copy to...";
-			else if (bMod_ALT)
-				sTip = "Swap between..";
-			else if (bHelp)
-				sTip = "Press Ctrl/Alt\nto copy/swap";
-
-			if (bGuiColorized) {
-				ofxImGuiSurfing::AddMatrixClickerLabels(index, keyCommandsChars, colors, bResponsiveButtonsClicker,
-					guiNumColumns, true, _h2, sTip, bFlip);
-			} else {
-				ofxImGuiSurfing::AddMatrixClickerLabels(index, keyCommandsChars, bResponsiveButtonsClicker,
-					guiNumColumns, true, _h2, sTip, bFlip);
-			}
-			if (bGuiExpand) {
-				if (index.getMax() > -1) {
-					if (!bMinimal && ui->isMaximized()) {
-						ui->AddSpacing();
-						ui->Add(ui->bAdvanced, OFX_IM_TOGGLE_ROUNDED_MINI);
-						if (ui->bAdvanced) {
-							ui->AddSpacing();
-							ui->AddLabel(guiNumColumns.getName());
-							ui->Add(guiNumColumns, OFX_IM_STEPPER_NO_LABEL);
-							ui->AddTooltip("Buttons per row.");
-							ui->AddLabel(numPresets.getName());
-							ui->Add(numPresets, OFX_IM_STEPPER_NO_LABEL);
-							ui->AddTooltip("Amount populating presets.");
-							ui->Add(bCycled);
-							ui->Add(bKeys);
-							ui->Add(bHelp);
-						}
-					}
-				}
-			}
-		}
-
-		//--
-
-		if (bWindowed) {
-			if (bOpen_) {
-				ui->EndWindow();
-			}
+			drawImGuiClicker(bWindowed, true);
 		}
 	}
 
 	//----
 
-	// 3. Only draw UI
+protected:
+	vector<ofColor> colors;
 
-	void drawGui() {
-		if (!bGui) return;
-		drawHelp();
+	// Colors for each row.
+	vector<ofColor> colors_ { ofColor::green, ofColor::yellow, ofColor::red,
+		ofColor::blue, ofColor::orange, ofColor::yellowGreen,
+		ofColor::indianRed, ofColor::lightGreen, ofColor::violet,
+		ofColor::blueViolet, ofColor::aliceBlue }; //TODO last color not applied..
+	// For example: 3 columns of 11 rows for 33 presets
+	// each row will have not repeated colors.
 
-		if (ui == nullptr) return;
-		ui->Begin();
-		{
-			if (bGuiParams) {
+	ofParameter<bool> bGuiColorized { "Colorized", false };
+	//enable to colorize per 3 rows: green, yellow, red.
 
-				string n;
-				if (bGuiFloating)
-					n = "PARAMETERS " + name;
-				else
-					n = "PRESETS " + name;
-				if (ui->BeginWindow(n)) {
+	ofParameter<int> numColumnsPerRow { "Num columns", 3, 1, 5 };
+	//num colors per row for the matrix clicker
 
-				//if (ui->BeginWindow(bGuiParams)) {
-					ui->Add(ui->bMinimize, OFX_IM_TOGGLE_ROUNDED_SMALL);
-					ui->Add(bGuiFloating, OFX_IM_TOGGLE_ROUNDED_MINI);
+	ofParameter<bool> bFlip { "Flip", false };
+	ofParameter<bool> bMinimalMode { "Minimal Mode", false };
 
-					ui->AddSpacingSeparated();
+	//bool bFoldered = 0;//TODO
 
-					if (!bGuiFloating && ui->isMaximized())
-						ui->AddLabelBig("Parameters");
-					ui->AddSpacing();
-
-					ui->AddGroup(paramsPreset);
-
-					// Integrated inside another panel
-					if (!bGuiFloating) {
-						ui->AddSpacingBigSeparated();
-
-						drawImGui();
-					}
-
-					ui->EndWindow();
-				};
-			}
-
-			// C.
-			// Separated on another floating window
-			if (bGuiFloating) drawImGui(true);
-		}
-		ui->End();
+public:
+	void setMinimalMode(bool b = true) {
+		bMinimalMode = b;
+	}
+	void setToggleMinimalMode() {
+		bMinimalMode = !bMinimalMode;
 	}
 
 protected:
-	vector<ofColor> colors;
-	bool bGuiColorized = false;
-
-public:
-	void setGuiColorized(bool b) { bGuiColorized = b; }
+	ofEventListener e_guiNumColumnsPerRow;
+	ofEventListener e_bGuiColorized;
 };

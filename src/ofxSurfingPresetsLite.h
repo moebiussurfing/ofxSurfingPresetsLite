@@ -20,7 +20,23 @@
 class ofxSurfingPresetsLite {
 public:
 	ofxSurfingPresetsLite() {
-		ofLogNotice("ofxSurfingPresetsLite") << "Constructor";
+		ofLogNotice("ofxSurfingPresetsLite") << "Constructor()";
+addListeners();
+	};
+
+	~ofxSurfingPresetsLite() {
+		ofLogNotice("ofxSurfingPresetsLite") << "Destructor()";
+		
+		removeListeners();
+		destructUI();
+	};
+
+protected:
+	virtual void destructUI() {
+		ofLogNotice("ofxSurfingPresetsLite") << "destructUI()";
+	}
+
+	void addListeners() {
 
 		ofAddListener(parameters.parameterChangedE(), this, &ofxSurfingPresetsLite::Changed);
 		ofAddListener(ofEvents().update, this, &ofxSurfingPresetsLite::update);
@@ -31,8 +47,7 @@ public:
 		addKeysListeners();
 	}
 
-	~ofxSurfingPresetsLite() {
-		ofLogNotice("ofxSurfingPresetsLite") << "Destructor";
+	void removeListeners() {
 
 		ofRemoveListener(parameters.parameterChangedE(), this, &ofxSurfingPresetsLite::Changed);
 		ofRemoveListener(ofEvents().update, this, &ofxSurfingPresetsLite::update);
@@ -88,7 +103,7 @@ public:
 	ofParameter<string> indexName { "Name", "NONE" };
 
 	ofParameter<bool> bCycled { "Cycled", true };
-	ofParameter<int> numPresets { "Num presets", 9, 1, 32 };
+	ofParameter<int> numPresetsForPopulating { "Num presets", 9, 1, 32 }; // max presets but only for populating!
 
 private:
 	int index_PRE = -1; // pre
@@ -97,11 +112,11 @@ public:
 	ofParameter<bool> bGui { "PRESETS", true };
 	ofParameter<bool> bGuiParams { "UI PARAMETERS", true };
 	ofParameter<bool> bGuiClicker { "UI CLICKER", false };
-	//ofParameter<bool> bGuiClickerMini { "Mini Clicker", false };
-	ofParameter<bool> bGuiFloating { "Floating", true };
+	ofParameter<bool> bGuiFloating { "Floating Window", true };
 	ofParameter<bool> bGuiExpand { "Expand", false };
-	ofParameter<int> guiNumColumns { "Num columns", 3, 1, 5 };
+	//ofParameter<bool> bGuiClickerMini { "Mini Clicker", false };
 
+public:
 	void setToggleGuiVisible() { bGui = !bGui; }
 	void setGuiVisible(bool b = true) { bGui = b; }
 	bool getGuiVisible() { return bGui; }
@@ -113,8 +128,6 @@ public:
 	ofParameter<void> vNext { ">" };
 
 protected:
-	//ofParameter<void> vRename { "Rename" }; //TODO
-
 	ofParameter<void> vNew { "New" };
 	ofParameter<void> vDelete { "Delete" };
 	ofParameter<void> vSave { "Save" };
@@ -129,6 +142,8 @@ protected:
 	ofParameter<bool> bKeys { "Keys", true };
 	ofParameter<bool> bHelp { "Help", true };
 
+	//ofParameter<void> vRename { "Rename" }; //TODO
+
 	vector<char> keyCommandsChars;
 
 private:
@@ -138,6 +153,7 @@ private:
 		doRefreshKitFiles();
 
 		setupParameters();
+
 		setupGui();
 	}
 
@@ -145,16 +161,15 @@ private:
 		ofLogNotice("ofxSurfingPresetsLite") << "refreshGui()";
 	}
 
-	void setupParameters() {
+	virtual void setupParametersExtra() {
+		ofLogNotice("ofxSurfingPresetsLite") << "setupParametersExtra()";
+	}
+
+	virtual void setupParameters() {
 		ofLogNotice("ofxSurfingPresetsLite") << "setupParameters()";
 
 		indexName.setSerializable(false);
 		paramsKit.setSerializable(false);
-
-		//paramsUI.add(bGuiClicker);
-		//params.add(paramsUI);
-		//paramsBrowse.add(indexName);
-		//paramsManager.add(vRename);
 
 		paramsBrowse.add(index);
 		paramsBrowse.add(vNext);
@@ -175,19 +190,27 @@ private:
 
 		paramsInternal.add(bGuiParams);
 		paramsInternal.add(bGuiClicker);
-		paramsInternal.add(bGuiFloating);
-		paramsInternal.add(bGuiExpand);
-		paramsInternal.add(guiNumColumns);
 		paramsInternal.add(bCycled);
-		paramsInternal.add(numPresets);
+		paramsInternal.add(numPresetsForPopulating);
 		paramsInternal.add(bGui);
 
 		parameters.add(paramsBrowse);
 		parameters.add(paramsManager);
 		parameters.add(paramsKit);
 		parameters.add(paramsInternal);
+
 		parameters.add(bHelp);
 		parameters.add(bKeys);
+
+		//paramsInternal.add(numColumnsPerRow);
+		//paramsInternal.add(bGuiFloating);
+		//paramsInternal.add(bGuiExpand);
+		//paramsUI.add(bGuiClicker);
+		//params.add(paramsUI);
+		//paramsBrowse.add(indexName);
+		//paramsManager.add(vRename);
+
+		setupParametersExtra();
 	}
 
 	virtual void setupGui() {
@@ -249,9 +272,9 @@ private:
 			'n',
 			'm'
 		};
-		numPresets = ofClamp(numPresets.get(), 0, numPresets.getMax());
+		numPresetsForPopulating = ofClamp(numPresetsForPopulating.get(), 0, numPresetsForPopulating.getMax());
 		keyCommandsChars.clear();
-		for (size_t i = 0; i < numPresets; i++) {
+		for (size_t i = 0; i < numPresetsForPopulating; i++) {
 			keyCommandsChars.push_back(pChars[i]);
 		}
 
@@ -277,6 +300,9 @@ public:
 	void buildHelp() {
 		sHelp = "";
 		sHelp += "PRESETS\nMANAGER\n";
+		sHelp += "\n";
+		sHelp += "g           UI\n";
+		sHelp += "h           Help\n";
 		sHelp += "\n";
 		sHelp += "LEFT/RIGHT  Browse\n";
 		sHelp += "UP/DOWN\n";
@@ -327,7 +353,7 @@ private:
 		//indexName.set(filename);
 	}
 
-	//-
+	//--
 
 public:
 	void addGroup(ofParameterGroup & group) {
@@ -414,23 +440,19 @@ public:
 		index.set(i);
 	}
 
-	void doLoadNextRow() {
+	virtual void doLoadNextRow() {
 		ofLogNotice("ofxSurfingPresetsLite") << "doLoadNextRow()";
 
-		if (index > index.getMax() - guiNumColumns) return;
 		int i = index;
-		i = i + guiNumColumns;
 		if (bCycled)
 			if (i > index.getMax()) i = index.getMin() + i;
 		index = ofClamp(i, index.getMin(), index.getMax());
 	}
 
-	void doLoadPreviousRow() {
+	virtual void doLoadPreviousRow() {
 		ofLogNotice("ofxSurfingPresetsLite") << "doLoadPreviousRow()";
 
-		if (index < guiNumColumns) return;
 		int i = index;
-		i = i - guiNumColumns;
 		if (bCycled)
 			if (i < index.getMin()) i = index.getMax() - i;
 		index = ofClamp(i, index.getMin(), index.getMax());
@@ -636,11 +658,11 @@ private:
 		}
 
 		else if (name == vPopulateKit.getName()) {
-			doPopulateKit(numPresets);
+			doPopulateKit(numPresetsForPopulating);
 		}
 
 		else if (name == vPopulateRandomKit.getName()) {
-			doPopulateRandomKit(numPresets);
+			doPopulateRandomKit(numPresetsForPopulating);
 		}
 	}
 
@@ -791,12 +813,12 @@ protected:
 	//	if (filenames.size() == 0) return;
 
 	//	/*
- //       // remove
- //       //filename = filenames[index];
- //       ofFile::removeFile(pathPresets + "\\" + filename + ".json");
- //       doRefreshKitFiles();
- //       // make new
- //       */
+	//       // remove
+	//       //filename = filenames[index];
+	//       ofFile::removeFile(pathPresets + "\\" + filename + ".json");
+	//       doRefreshKitFiles();
+	//       // make new
+	//       */
 
 	//	// delete
 	//	doDelete();
@@ -891,7 +913,7 @@ protected:
 
 		else {
 			//TODO: not working
-			for (size_t i = 0; i < numPresets; i++) {
+			for (size_t i = 0; i < numPresetsForPopulating; i++) {
 				if ((char)key == keyCommandsChars[i]) {
 					//if (key == int(keyCommandsChars[i])) {
 					index.set(i);
@@ -900,10 +922,10 @@ protected:
 			}
 		}
 
-		if (key == 'g')
-			setToggleGuiVisible();
-		else if (key == 'G')
-			bGuiClicker = !bGuiClicker;
+		if (key == 'h') bHelp = !bHelp;
+
+		if (key == 'g') setToggleGuiVisible();
+		else if (key == 'G') bGuiClicker = !bGuiClicker;
 	}
 
 	//--------------------------------------------------------------

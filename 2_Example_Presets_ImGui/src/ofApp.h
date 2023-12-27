@@ -10,9 +10,10 @@ class ofApp : public ofBaseApp {
 public:
 	void setup();
 	void draw();
+	void keyPressed(int key);
+
+	surfingSceneTesters scene;
 
 	ofxSurfingGui ui;
-
 	ofxSurfingPresetsLiteImGui presetsManager;
-	surfingSceneTesters scene;
 };
