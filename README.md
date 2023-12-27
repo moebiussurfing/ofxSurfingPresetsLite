@@ -19,3 +19,4 @@ This class is based on and separated from [ofxSurfingHelpers](https://github.com
 
 ### TODO
 - Allow randomizer for nested groups.
+- Allow Kit naming and multiple Kits managment.
