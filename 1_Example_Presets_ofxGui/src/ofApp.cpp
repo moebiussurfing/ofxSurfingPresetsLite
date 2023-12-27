@@ -12,7 +12,8 @@ void ofApp::setup() {
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-	ofBackground(scene.amount % 2 == 0 ? scene.c1 : scene.c2);
+	ofColor c = (scene.amount % 2 == 0) ? scene.c1 : scene.c2;
+	ofBackground(c);
 	scene.draw();
 
 	presetsManager.drawGui();

@@ -5,7 +5,7 @@
 
 TODO
 	add kit selector and naming
-	add custom namnes ?
+	add custom names ?
 */
 
 //--
@@ -16,10 +16,10 @@ TODO
 
 //----
 
-class ofxSurfingPresetsLiteImGui : public ofxSurfingPresetsLite {
+class SurfingPresetsLiteImGui : public SurfingPresetsLite {
 protected:
 	virtual void destructUI() override {
-		ofLogNotice("ofxSurfingPresetsLiteImGui") << "destructUI()";
+		ofLogNotice("SurfingPresetsLiteImGui") << "destructUI()";
 
 		delete ui;
 		ui = nullptr;
@@ -36,7 +36,7 @@ public:
 	}
 
 	void setupParameters() override {
-		ofLogNotice("ofxSurfingPresetsLiteImGui") << "setupParameters()";
+		ofLogNotice("SurfingPresetsLiteImGui") << "setupParameters()";
 
 		indexName.setSerializable(false);
 		paramsKit.setSerializable(false);
@@ -81,7 +81,7 @@ public:
 	}
 
 	void setupParametersExtra() override {
-		ofLogNotice("ofxSurfingPresetsLiteImGui") << "setupParametersExtra()";
+		ofLogNotice("SurfingPresetsLiteImGui") << "setupParametersExtra()";
 
 		e_guiNumColumnsPerRow = numColumnsPerRow.newListener([this](int & i) {
 			buildColorizer();
@@ -95,7 +95,7 @@ public:
 	}
 
 	void buildColorizer() {
-		ofLogNotice("ofxSurfingPresetsLiteImGui") << "buildColorizer()";
+		ofLogNotice("SurfingPresetsLiteImGui") << "buildColorizer()";
 
 		// For colorize buttons on matrix preset colors
 		if (bGuiColorized) {
@@ -118,7 +118,7 @@ public:
 	}
 
 	void doLoadNextRow() override {
-		ofLogNotice("ofxSurfingPresetsLiteImGui") << "doLoadNextRow()";
+		ofLogNotice("SurfingPresetsLiteImGui") << "doLoadNextRow()";
 
 		if (index > index.getMax() - numColumnsPerRow) return;
 		int i = index;
@@ -129,7 +129,7 @@ public:
 	}
 
 	void doLoadPreviousRow() override {
-		ofLogNotice("ofxSurfingPresetsLiteImGui") << "doLoadPreviousRow()";
+		ofLogNotice("SurfingPresetsLiteImGui") << "doLoadPreviousRow()";
 
 		if (index < numColumnsPerRow) return;
 		int i = index;
@@ -401,7 +401,7 @@ public:
 
 							if (!dont_ask_me_next_time) {
 								if (ImGui::Button("OK", ImVec2(120, 2 * _h))) {
-									ofLogNotice("ofxSurfingPresetsLiteImGui") << "CLEAR";
+									ofLogNotice("SurfingPresetsLiteImGui") << "CLEAR";
 									doClearKit();
 									ImGui::CloseCurrentPopup();
 								}
@@ -411,7 +411,7 @@ public:
 									ImGui::CloseCurrentPopup();
 								}
 							} else {
-								ofLogNotice("ofxSurfingPresetsLiteImGui") << "CLEAR";
+								ofLogNotice("SurfingPresetsLiteImGui") << "CLEAR";
 								doClearKit(false);
 								ImGui::CloseCurrentPopup();
 
@@ -463,7 +463,7 @@ public:
 						{
 							bool b = ImGui::InputText("##NAME", &s);
 							if (b) {
-								ofLogNotice("ofxSurfingPresetsLiteImGui") << "InputText:" << s.c_str();
+								ofLogNotice("SurfingPresetsLiteImGui") << "InputText:" << s.c_str();
 								setFilename(s);
 							}
 							if (ImGui::IsItemDeactivated() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))

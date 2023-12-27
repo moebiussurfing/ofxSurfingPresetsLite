@@ -9,49 +9,55 @@
 /*
 	TODO:
 
-	add bGui for params window.
-	improve first name.
+	fix delete
+		should maintain sorting with xx01.json
+		fix/clean index and indexPre and names workflow
+	in the matrix 
+		fix colors on flipping 
+		fix direction
+	improve first naming
 		new auto set name to be faster
-	add rename preset
+	add rename/custom names presets
 */
 
 //----
 
-class ofxSurfingPresetsLite {
+class SurfingPresetsLite {
 public:
-	ofxSurfingPresetsLite() {
-		ofLogNotice("ofxSurfingPresetsLite") << "Constructor()";
-addListeners();
+	SurfingPresetsLite() {
+		ofLogNotice("SurfingPresetsLite") << "Constructor()";
+		addListeners();
 	};
 
-	~ofxSurfingPresetsLite() {
-		ofLogNotice("ofxSurfingPresetsLite") << "Destructor()";
-		
+	~SurfingPresetsLite() {
+		ofLogNotice("SurfingPresetsLite") << "Destructor()";
+
 		removeListeners();
+
 		destructUI();
 	};
 
 protected:
 	virtual void destructUI() {
-		ofLogNotice("ofxSurfingPresetsLite") << "destructUI()";
+		ofLogNotice("SurfingPresetsLite") << "destructUI() Empty";
 	}
 
 	void addListeners() {
 
-		ofAddListener(parameters.parameterChangedE(), this, &ofxSurfingPresetsLite::Changed);
-		ofAddListener(ofEvents().update, this, &ofxSurfingPresetsLite::update);
-		ofAddListener(ofEvents().exit, this, &ofxSurfingPresetsLite::exit);
+		ofAddListener(parameters.parameterChangedE(), this, &SurfingPresetsLite::Changed);
+		ofAddListener(ofEvents().update, this, &SurfingPresetsLite::update);
+		ofAddListener(ofEvents().exit, this, &SurfingPresetsLite::exit);
 
-		ofSetLogLevel("ofxSurfingPresetsLite", OF_LOG_NOTICE);
+		ofSetLogLevel("SurfingPresetsLite", OF_LOG_NOTICE);
 
 		addKeysListeners();
 	}
 
 	void removeListeners() {
 
-		ofRemoveListener(parameters.parameterChangedE(), this, &ofxSurfingPresetsLite::Changed);
-		ofRemoveListener(ofEvents().update, this, &ofxSurfingPresetsLite::update);
-		ofRemoveListener(ofEvents().exit, this, &ofxSurfingPresetsLite::exit);
+		ofRemoveListener(parameters.parameterChangedE(), this, &SurfingPresetsLite::Changed);
+		ofRemoveListener(ofEvents().update, this, &SurfingPresetsLite::update);
+		ofRemoveListener(ofEvents().exit, this, &SurfingPresetsLite::exit);
 
 		removeKeysListeners();
 	}
@@ -148,7 +154,7 @@ protected:
 
 private:
 	void setup() {
-		ofLogNotice("ofxSurfingPresetsLite") << "setup()";
+		ofLogNotice("SurfingPresetsLite") << "setup()";
 
 		doRefreshKitFiles();
 
@@ -158,15 +164,15 @@ private:
 	}
 
 	virtual void refreshGui() {
-		ofLogNotice("ofxSurfingPresetsLite") << "refreshGui()";
+		ofLogNotice("SurfingPresetsLite") << "refreshGui() Empty";
 	}
 
 	virtual void setupParametersExtra() {
-		ofLogNotice("ofxSurfingPresetsLite") << "setupParametersExtra()";
+		ofLogNotice("SurfingPresetsLite") << "setupParametersExtra()  Empty";
 	}
 
 	virtual void setupParameters() {
-		ofLogNotice("ofxSurfingPresetsLite") << "setupParameters()";
+		ofLogNotice("SurfingPresetsLite") << "setupParameters()";
 
 		indexName.setSerializable(false);
 		paramsKit.setSerializable(false);
@@ -179,29 +185,32 @@ private:
 		paramsManager.add(vLoad);
 		paramsManager.add(vNew);
 		paramsManager.add(vDelete);
-		paramsManager.add(vRandom);
 		paramsManager.add(vReset);
+		paramsManager.add(vRandom);
 		paramsManager.add(bAutoSave);
 
-		paramsKit.add(vScanKit);
-		paramsKit.add(vClearKit);
 		paramsKit.add(vPopulateKit);
 		paramsKit.add(vPopulateRandomKit);
+		paramsKit.add(vClearKit);
+		paramsKit.add(vScanKit);
 
-		paramsInternal.add(bGuiParams);
-		paramsInternal.add(bGuiClicker);
-		paramsInternal.add(bCycled);
-		paramsInternal.add(numPresetsForPopulating);
-		paramsInternal.add(bGui);
+		paramsAdvanced.add(bCycled);
+		paramsAdvanced.add(numPresetsForPopulating);
 
+		paramsInternal.add(bGui); //only for serializing settings. could be hidden of the ui
+		paramsAdvanced.add(paramsInternal);
+
+		parameters.add(bGuiParams);
 		parameters.add(paramsBrowse);
 		parameters.add(paramsManager);
 		parameters.add(paramsKit);
-		parameters.add(paramsInternal);
+		parameters.add(paramsAdvanced);
 
 		parameters.add(bHelp);
 		parameters.add(bKeys);
 
+		//not usable for ofxGui besides ImGui
+		//paramsInternal.add(bGuiClicker);
 		//paramsInternal.add(numColumnsPerRow);
 		//paramsInternal.add(bGuiFloating);
 		//paramsInternal.add(bGuiExpand);
@@ -214,15 +223,29 @@ private:
 	}
 
 	virtual void setupGui() {
-		ofLogNotice("ofxSurfingPresetsLite") << "setupGui()";
+		ofLogNotice("SurfingPresetsLite") << "setupGui() Empty";
 	}
 
+	void refreshIndexRanges() {
+		ofLogNotice("SurfingPresetsLite") << "refreshIndexRanges()";
+
+		bool b = (dir.size() > 0);
+		if (b) {
+			index.setMin(0);
+			index.setMax(dir.size() - 1);
+		} else {
+			index.setMin(-1);
+			index.setMax(-1);
+			index.set(-1);
+			indexName.set("NONE");
+		}
+	}
 	void startup() {
-		ofLogNotice("ofxSurfingPresetsLite") << "startup()";
+		ofLogNotice("SurfingPresetsLite") << "startup()";
 
 		doRefreshKitFiles();
 
-		index_PRE = -1; // pre
+		index_PRE = -2; // pre
 
 		string s;
 		if (pathGlobal == "")
@@ -230,10 +253,17 @@ private:
 		else
 			s = pathGlobal + "\\" + pathSettings;
 
+		// load settings
 		ofxSurfing::loadGroup(parameters, s);
 
+		// fix if index is weird or not correlated to dir files!
+		refreshIndexRanges();
+
+		// flag to create help info
 		bFlagBuildHelp = true;
 
+		//TODO: fix > 9
+		// define some standard key strokes to trig presets
 		vector<char> pChars = {
 			'0',
 			'1',
@@ -331,7 +361,7 @@ public:
 private:
 	void doSave() {
 		// note that saves the previously settled file name when picking the index!
-		ofLogNotice("ofxSurfingPresetsLite") << "doSave(): " << filename;
+		ofLogNotice("SurfingPresetsLite") << "doSave(): " << filename;
 
 		if (bDoingNew) bDoingNew = false;
 
@@ -342,7 +372,7 @@ private:
 	}
 
 	void doLoad() {
-		ofLogNotice("ofxSurfingPresetsLite") << "doLoad(): " << filename;
+		ofLogNotice("SurfingPresetsLite") << "doLoad(): " << filename;
 
 		if (bDoingNew) bDoingNew = false;
 
@@ -403,16 +433,16 @@ public:
 			pathPresets = p + "\\";
 
 		ofxSurfing::checkFolderOrCreate(pathPresets);
-		ofLogNotice("ofxSurfingPresetsLite") << "setPathPresets(): " << pathPresets;
+		ofLogNotice("SurfingPresetsLite") << "setPathPresets(): " << pathPresets;
 	}
 
 	void setFilename(string p) {
 		filename = p;
-		ofLogNotice("ofxSurfingPresetsLite") << "setFilename(): " << filename;
+		ofLogNotice("SurfingPresetsLite") << "setFilename(): " << filename;
 	}
 
 	void doLoadPrevious() {
-		ofLogNotice("ofxSurfingPresetsLite") << "doLoadPrevious()";
+		ofLogNotice("SurfingPresetsLite") << "doLoadPrevious()";
 		if (index.getMax() == -1) return;
 		int i = index;
 
@@ -427,7 +457,7 @@ public:
 	}
 
 	void doLoadNext() {
-		ofLogNotice("ofxSurfingPresetsLite") << "doLoadNext()";
+		ofLogNotice("SurfingPresetsLite") << "doLoadNext()";
 		if (index.getMax() == -1) return;
 		int i = index;
 		if (i < index.getMax())
@@ -441,7 +471,7 @@ public:
 	}
 
 	virtual void doLoadNextRow() {
-		ofLogNotice("ofxSurfingPresetsLite") << "doLoadNextRow()";
+		ofLogNotice("SurfingPresetsLite") << "doLoadNextRow()";
 
 		int i = index;
 		if (bCycled)
@@ -450,7 +480,7 @@ public:
 	}
 
 	virtual void doLoadPreviousRow() {
-		ofLogNotice("ofxSurfingPresetsLite") << "doLoadPreviousRow()";
+		ofLogNotice("SurfingPresetsLite") << "doLoadPreviousRow()";
 
 		int i = index;
 		if (bCycled)
@@ -461,133 +491,12 @@ public:
 private:
 	void Changed(ofAbstractParameter & e) {
 		string name = e.getName();
-		ofLogNotice("ofxSurfingPresetsLite") << "Changed: " << name << ": " << e;
+		ofLogNotice("SurfingPresetsLite") << "Changed: " << name << ": " << e;
 
 		bFlagBuildHelp = true;
 
 		if (name == index.getName()) {
-			// clamp inside dir files amount limits
-			index = ofClamp(index.get(), index.getMin(), index.getMax());
-			if (filenames.size() == 0) return;
-
-			// Changed?
-			if (index.get() != index_PRE) {
-				bIsChangedIndex = true;
-
-				if (index_PRE != -1) {
-					if (index_PRE < filenames.size() && index < filenames.size()) {
-						ofLogNotice("ofxSurfingPresetsLite") << "Changed: Preset Index: " << ofToString(index_PRE) << " > " << ofToString(index);
-						ofLogNotice("ofxSurfingPresetsLite") << "\t(" << ofToString(filenames[index_PRE]) << " > " << ofToString(filenames[index]) << ")\n";
-					}
-				}
-
-				//--
-
-				// 1. Common Load but AutoSave
-
-				if (!bMod_CONTROL && !bMod_ALT) // Ctrl nor Alt not pressed
-				{
-					// Autosave
-					if (bAutoSave) {
-						if (dir.size() > 0 && index_PRE < dir.size() && index_PRE < filenames.size()) {
-							filename = filenames[index_PRE];
-							doSave();
-						} else {
-							ofLogError("ofxSurfingPresetsLite") << "Preset Index points an out of range file!";
-						}
-					}
-
-					index_PRE = index;
-
-					//--
-
-					// Load
-					ofLogNotice("ofxSurfingPresetsLite") << index.getName() + " : " << ofToString(index);
-
-					if (dir.size() > 0 && index < dir.size() && index_PRE < filenames.size()) {
-						filename = filenames[index_PRE];
-						//indexName = filename;//crashes..
-						doLoad();
-					} else {
-						ofLogError("ofxSurfingPresetsLite") << "File out of range";
-					}
-				}
-
-				//--
-
-				// 2. Save / Copy
-
-				// Save to clicked preset index
-				// Ctrl pressed. Alt not pressed
-
-				else if (bMod_CONTROL && !bMod_ALT) {
-					if (index < filenames.size()) {
-						filename = filenames[index];
-						doSave();
-						ofLogNotice("ofxSurfingPresetsLite") << "PRESET COPY!";
-
-						index_PRE = index;
-					}
-				}
-
-				//--
-
-				//TODO:
-
-				// 3. Swap
-
-				// (from/to) pre/current index
-				// Ctrl not pressed. Alt pressed
-
-				else if (!bMod_CONTROL && bMod_ALT) {
-					if (dir.size() > 0 && index < filenames.size() && index_PRE < filenames.size()) {
-
-						// Rename target to source
-						string _fFrom = filenames[index_PRE];
-						string _fTo = filenames[index];
-						ofFile f;
-
-						_fTo = pathPresets + "\\" + _fTo + ".json";
-						_fFrom = pathPresets + "\\" + _fFrom + ".json";
-
-						bool bf = f.open(_fTo);
-						bool bt = f.renameTo(_fFrom, true, true);
-
-						// Save current to
-						filename = _fTo;
-						doSave();
-
-						if (bf && bt) {
-							ofLogNotice("ofxSurfingPresetsLite") << "PRESET SWAP!";
-							ofLogNotice("ofxSurfingPresetsLite") << _fFrom << " <-> " << _fTo;
-						} else {
-							ofLogError("ofxSurfingPresetsLite") << "WRONG SWAP!";
-						}
-
-						index_PRE = index;
-					}
-				}
-			}
-
-			//----
-
-			//TODO:
-			// changed
-			//if (index_PRE != index) {
-			//	if (bAutoSave)
-			//	{
-			//		if (index_PRE < filenames.size() && index_PRE >= 0) {
-			//			filename = filenames[index_PRE];
-			//			doSave();
-			//		}
-			//	}
-			//	index_PRE = index;//refresh
-			//}
-
-			//if (index < filenames.size() && index >= 0) {
-			//	filename = filenames[index];
-			//	doLoad();
-			//}
+			doProcessIndexCallback();
 		}
 
 		else if (name == vLoad.getName()) {
@@ -604,18 +513,22 @@ private:
 
 		else if (name == vSave.getName()) {
 			int num = getNumFiles();
-			if (num == 0) filename = "0";
+			if (num == 0) filename = "00";
 
 			// filename is already named
 			doSave();
 
+			//--
+
 			// scan
-			string filename_ = filename;
+			string filename_ = filename; //push previous name
 			doRefreshKitFiles();
 
 			//if (filename_ != filename)
 			if (num != getNumFiles()) {
-				ofLogNotice("ofxSurfingPresetsLite") << "Reorganize " << dir.size() << " files.";
+				ofLogNotice("SurfingPresetsLite") << "Reorganize " << dir.size() << " files.";
+
+				// pop/set back to previous preset index
 				for (int i = 0; i < dir.size(); i++) {
 					string n = dir.getName(i);
 					if (n == filename_ + ".json") {
@@ -666,6 +579,137 @@ private:
 		}
 	}
 
+	void doProcessIndexCallback() {
+		if (dir.size() == 0) return;
+
+		// clamp inside dir files amount limits
+		index = ofClamp(index.get(), index.getMin(), index.getMax());
+
+		// Changed?
+		if (index.get() != index_PRE) {
+			bIsChangedIndex = true;
+
+			//TODO: simplify
+			if (index_PRE != -1 && index_PRE != -2) {
+				if (index_PRE < filenames.size() && index < filenames.size()) {
+					ofLogNotice("SurfingPresetsLite") << "Changed: Index:";
+					ofLogNotice("SurfingPresetsLite") << ofToString(index_PRE) << " > " 
+						<< ofToString(index);
+					ofLogNotice("SurfingPresetsLite") << ofToString(filenames[index_PRE]) << " > " 
+						<< ofToString(filenames[index]);
+					ofLogNotice("SurfingPresetsLite") << ofToString(dir[index_PRE].getFileName()) << " > " 
+						<< ofToString(dir[index].getFileName());
+				}
+			}
+
+			//--
+
+			// 1. Common load. Also save previous index if AutoSave enabled
+
+			if (!bMod_CONTROL && !bMod_ALT) // Ctrl nor Alt not pressed
+			{
+				// AutoSave
+				if (bAutoSave) {
+					if (index_PRE < filenames.size()) {
+						filename = filenames[index_PRE];
+						doSave();
+					} else {
+						ofLogError("SurfingPresetsLite") << "Preset Index points an out of range file!";
+					}
+				}
+
+				//--
+
+				// Load
+				ofLogNotice("SurfingPresetsLite") << index.getName() + " : " << ofToString(index);
+
+				if (index < filenames.size()) {
+					filename = filenames[index];
+					doLoad();
+				} else {
+					ofLogError("SurfingPresetsLite") << "File out of range";
+				}
+
+				index_PRE = index;
+			}
+
+			//--
+
+			// 2. Save / Copy
+
+			// Save to clicked preset index
+			// Ctrl pressed. Alt not pressed
+
+			else if (bMod_CONTROL && !bMod_ALT) {
+				if (index < filenames.size()) {
+					filename = filenames[index];
+					doSave();
+					ofLogNotice("SurfingPresetsLite") << "PRESET COPY!";
+
+					index_PRE = index;
+				}
+			}
+
+			//--
+
+			//TODO:
+
+			// 3. Swap
+
+			// (from/to) pre/current index
+			// Ctrl not pressed. Alt pressed
+
+			else if (!bMod_CONTROL && bMod_ALT) {
+				if (dir.size() > 0 && index < filenames.size() && index_PRE < filenames.size()) {
+
+					// Rename target to source
+					string _fFrom = filenames[index_PRE];
+					string _fTo = filenames[index];
+					ofFile f;
+
+					_fTo = pathPresets + "\\" + _fTo + ".json";
+					_fFrom = pathPresets + "\\" + _fFrom + ".json";
+
+					bool bf = f.open(_fTo);
+					bool bt = f.renameTo(_fFrom, true, true);
+
+					// Save current to
+					filename = _fTo;
+					doSave();
+
+					if (bf && bt) {
+						ofLogNotice("SurfingPresetsLite") << "PRESET SWAP!";
+						ofLogNotice("SurfingPresetsLite") << _fFrom << " <-> " << _fTo;
+					} else {
+						ofLogError("SurfingPresetsLite") << "WRONG SWAP!";
+					}
+
+					index_PRE = index;
+				}
+			}
+		}
+
+		//----
+
+		//TODO:
+		// changed
+		//if (index_PRE != index) {
+		//	if (bAutoSave)
+		//	{
+		//		if (index_PRE < filenames.size() && index_PRE >= 0) {
+		//			filename = filenames[index_PRE];
+		//			doSave();
+		//		}
+		//	}
+		//	index_PRE = index;//refresh
+		//}
+
+		//if (index < filenames.size() && index >= 0) {
+		//	filename = filenames[index];
+		//	doLoad();
+		//}
+	}
+
 	//--
 
 public:
@@ -674,6 +718,7 @@ public:
 	ofParameterGroup paramsBrowse { "Browse" };
 	ofParameterGroup paramsManager { "Manager" };
 	ofParameterGroup paramsKit { "Kit" };
+	ofParameterGroup paramsAdvanced { "Advanced" };
 	ofParameterGroup paramsInternal { "Internal" };
 	//ofParameterGroup paramsUI { "UI" };
 
@@ -691,7 +736,7 @@ protected:
 	string filePath;
 
 public:
-	string filename = "1";
+	string filename = "NONE";
 	vector<string> filenames;
 
 	//--
@@ -713,22 +758,19 @@ protected:
 
 	bool doRefreshKitFiles() {
 		// Load dragged images folder
-		ofLogNotice("ofxSurfingPresetsLite") << "doRefreshKitFiles(): " << pathPresets;
+		ofLogNotice("SurfingPresetsLite") << "doRefreshKitFiles(): " << pathPresets;
 
-		bool b = false;
-
-		dir.listDir(pathPresets);
 		dir.allowExt("JSON");
 		dir.allowExt("json");
 		dir.sort();
+		dir.listDir(pathPresets);
 
 		// Log files on folder
 		filenames.clear();
 		for (int i = 0; i < dir.size(); i++) {
-			ofLogNotice("ofxSurfingPresetsLite") << "file "
-												 << "[" << ofToString(i) << "] " << dir.getName(i);
+			ofLogNotice("SurfingPresetsLite") << "file [" << ofToString(i) << "] " << dir.getName(i);
 
-			string _name = "NoName"; // without ext
+			string _name = "NONE"; // without ext
 			auto _names = ofSplitString(dir.getName(i), ".");
 			if (_names.size() > 0) {
 				_name = _names[0];
@@ -736,18 +778,10 @@ protected:
 			filenames.push_back(_name);
 		}
 
-		b = (dir.size() > 0);
-		if (b) {
-			index.setMin(0);
-			index.setMax(dir.size() - 1);
-		} else {
-			index.setMin(-1);
-			index.setMax(-1);
-			index.set(-1);
-			indexName.set("NONE");
-		}
+		refreshIndexRanges();
 
 		// returns true if there's some file/s!
+		bool b = (dir.size() > 0);
 		return b;
 	}
 
@@ -758,30 +792,50 @@ protected:
 
 protected:
 	void doAddNewPreset() {
-		ofLogNotice("ofxSurfingPresetsLite") << "doAddNewPreset()";
+		ofLogNotice("SurfingPresetsLite") << "doAddNewPreset()";
 
 		doNewPreset();
 		doSave();
-		bool b = doRefreshKitFiles();
-		if (b) index = getNumPresets() - 1; //workflow
+		doRefreshKitFiles();
+
+		index.set(index.getMax());
+	}
+
+	void doListFiles() {
+		for (auto f : dir) {
+			ofLogNotice("SurfingPresetsLite") << f.getAbsolutePath();
+		}
 	}
 
 	void doDelete() {
-		ofLogNotice("ofxSurfingPresetsLite") << "doDelete()";
+		if (dir.size() == 0) return;
 
-		if (filenames.size() == 0) return;
+		ofLogNotice("SurfingPresetsLite") << "doDelete() Index: " << index;
 
-		ofFile::removeFile(pathPresets + "\\" + filename + ".json");
+		//dir.lis
+
+		//fix refresh
+		//filename = dir[index].getBaseName();
+		filename = filenames[index];
+		ofLogNotice("SurfingPresetsLite") << "doDelete() Filename: " << filename;
+
+		string p = pathPresets + "\\" + filename + ".json";
+		ofLogNotice("SurfingPresetsLite") << "doDelete() Path: " << p;
+
+		bool b = ofFile::removeFile(p);
+		if (b) {
+			ofLogNotice("SurfingPresetsLite") << "Successfully deleted: " << p;
+		} else {
+			ofLogError("SurfingPresetsLite") << "Unable to delete: " << p;
+		}
+
 		doRefreshKitFiles();
 
-		//nameIndex = filenames[index];
-
-		index.set(index.get());
-		//doLoad();
+		index.set(index.getMax());
 	}
 
 	void doNewPreset() {
-		ofLogNotice("ofxSurfingPresetsLite") << "doNewPreset()";
+		ofLogNotice("SurfingPresetsLite") << "doNewPreset()";
 
 		// Only sets a name,
 		// Correlated to the amount of files
@@ -794,12 +848,14 @@ protected:
 		indexName = "";
 
 		// auto name counting the amount of files
-		string _n = ofToString(dir.size());
+		// precede 0 to maintain correct index sorting for dir names!!
+		int sz = dir.size();
+		string n = string((sz < 10) ? "0" : "") + ofToString(sz);
 		bool bAvoidOverWrite = false;
 		for (int i = 0; i < dir.size(); i++) {
-			if (_n == dir.getName(i)) bAvoidOverWrite = true;
+			if (n == dir.getName(i)) bAvoidOverWrite = true;
 		}
-		if (!bAvoidOverWrite) indexName = _n;
+		if (!bAvoidOverWrite) indexName = n;
 
 		//TODO:
 		// should rename if file is already there!
@@ -808,30 +864,11 @@ protected:
 	}
 
 	//void doRename() {
-	//	ofLogNotice("ofxSurfingPresetsLite") << "doRename()";
-
-	//	if (filenames.size() == 0) return;
-
-	//	/*
-	//       // remove
-	//       //filename = filenames[index];
-	//       ofFile::removeFile(pathPresets + "\\" + filename + ".json");
-	//       doRefreshKitFiles();
-	//       // make new
-	//       */
-
-	//	// delete
-	//	doDelete();
-
-	//	// create new
-	//	if (!bOverInputText) bOverInputText = true;
-	//	indexName = "";
-
-	//	setFilename("");
+	//	ofLogNotice("SurfingPresetsLite") << "doRename()";
 	//}
 
 	void doClearKit(bool createOne = true) {
-		ofLogNotice("ofxSurfingPresetsLite") << "doClearKit";
+		ofLogNotice("SurfingPresetsLite") << "doClearKit";
 
 		// Remove all files
 		for (int i = 0; i < dir.size(); i++) {
@@ -848,13 +885,13 @@ protected:
 	}
 
 	void doPopulateRandomKit(int amount) { //pass -1 to overwrite/use the same amount of presets
-		ofLogNotice("ofxSurfingPresetsLite") << "doPopulateRandomKit() " << amount;
+		ofLogNotice("SurfingPresetsLite") << "doPopulateRandomKit() " << amount;
 
 		doPopulateKit(amount, true);
 	}
 
 	void doPopulateKit(int amount, bool bRandom = false) { //pass -1 to overwrite/use the same amount of presets
-		ofLogNotice("ofxSurfingPresetsLite") << "doPopulateKit() " << amount;
+		ofLogNotice("SurfingPresetsLite") << "doPopulateKit() " << amount;
 
 		doClearKit(false);
 
@@ -881,7 +918,7 @@ protected:
 		if (!bKeys) return;
 
 		const int & key = eventArgs.key;
-		ofLogVerbose("ofxSurfingPresetsLite") << "keyPressed: " << (char)key /*<< " [" << key << "]"*/;
+		ofLogVerbose("SurfingPresetsLite") << "keyPressed: " << (char)key /*<< " [" << key << "]"*/;
 
 		// Modifiers
 		bool mod_COMMAND = eventArgs.hasModifier(OF_KEY_COMMAND);
@@ -891,6 +928,9 @@ protected:
 
 		if (mod_CONTROL) bMod_CONTROL = true;
 		if (mod_ALT) bMod_ALT = true;
+
+		if (key == OF_KEY_DEL)
+			doDelete();
 
 		if (key == OF_KEY_LEFT)
 			doLoadPrevious();
@@ -924,8 +964,10 @@ protected:
 
 		if (key == 'h') bHelp = !bHelp;
 
-		if (key == 'g') setToggleGuiVisible();
-		else if (key == 'G') bGuiClicker = !bGuiClicker;
+		if (key == 'g')
+			setToggleGuiVisible();
+		else if (key == 'G')
+			bGuiClicker = !bGuiClicker;
 	}
 
 	//--------------------------------------------------------------
@@ -933,7 +975,7 @@ protected:
 		if (!bKeys) return;
 
 		const int & key = eventArgs.key;
-		ofLogVerbose("ofxSurfingPresetsLite") << "keyReleased: " << (char)key /*<< " [" << key << "]"*/;
+		ofLogVerbose("SurfingPresetsLite") << "keyReleased: " << (char)key /*<< " [" << key << "]"*/;
 
 		// Modifiers
 		bool mod_COMMAND = eventArgs.hasModifier(OF_KEY_COMMAND);
@@ -947,14 +989,14 @@ protected:
 
 	//--------------------------------------------------------------
 	void addKeysListeners() {
-		ofAddListener(ofEvents().keyPressed, this, &ofxSurfingPresetsLite::keyPressed);
-		ofAddListener(ofEvents().keyReleased, this, &ofxSurfingPresetsLite::keyReleased);
+		ofAddListener(ofEvents().keyPressed, this, &SurfingPresetsLite::keyPressed);
+		ofAddListener(ofEvents().keyReleased, this, &SurfingPresetsLite::keyReleased);
 	}
 
 	//--------------------------------------------------------------
 	void removeKeysListeners() {
-		ofRemoveListener(ofEvents().keyPressed, this, &ofxSurfingPresetsLite::keyPressed);
-		ofRemoveListener(ofEvents().keyReleased, this, &ofxSurfingPresetsLite::keyReleased);
+		ofRemoveListener(ofEvents().keyPressed, this, &SurfingPresetsLite::keyPressed);
+		ofRemoveListener(ofEvents().keyReleased, this, &SurfingPresetsLite::keyReleased);
 	}
 
 	// easy callback to know when the preset index/selector changed
@@ -978,7 +1020,7 @@ private:
 	// Random simple
 	//--------------------------------------------------------------
 	void doRandomizeParams(bool bSilent = false) {
-		ofLogNotice("ofxSurfingPresetsLite") << "doRandomizeParams";
+		ofLogNotice("SurfingPresetsLite") << "doRandomizeParams";
 
 		//TODO:
 		// this is not recursive inside the nested groups content!
@@ -994,7 +1036,7 @@ private:
 					pr.setWithoutEventNotifications(v);
 				else
 					pr.set(v);
-				ofLogNotice("ofxSurfingPresetsLite") << pr.getName() << " = " << pr.get();
+				ofLogNotice("SurfingPresetsLite") << pr.getName() << " = " << pr.get();
 			}
 
 			else if (p.type() == typeid(ofParameter<int>).name()) {
@@ -1004,7 +1046,7 @@ private:
 					pr.setWithoutEventNotifications(v);
 				else
 					pr.set(v);
-				ofLogNotice("ofxSurfingPresetsLite") << pr.getName() << " = " << pr.get();
+				ofLogNotice("SurfingPresetsLite") << pr.getName() << " = " << pr.get();
 			}
 
 			// include booleans
@@ -1015,7 +1057,7 @@ private:
 					pr.setWithoutEventNotifications(b);
 				else
 					pr.set(b);
-				ofLogNotice("ofxSurfingPresetsLite") << pr.getName() << " = " << pr.get();
+				ofLogNotice("SurfingPresetsLite") << pr.getName() << " = " << pr.get();
 			}
 
 			// colors
@@ -1030,7 +1072,7 @@ private:
 					pr.setWithoutEventNotifications(c);
 				else
 					pr.set(c);
-				ofLogNotice("ofxSurfingPresetsLite") << pr.getName() << " = " << pr.get();
+				ofLogNotice("SurfingPresetsLite") << pr.getName() << " = " << pr.get();
 			}
 		}
 	}
@@ -1038,7 +1080,7 @@ private:
 	// Reset Simple
 	//--------------------------------------------------------------
 	void doResetParams(bool bSilent = false) {
-		ofLogNotice("ofxSurfingPresetsLite") << "doResetParams";
+		ofLogNotice("SurfingPresetsLite") << "doResetParams";
 
 		for (int i = 0; i < paramsPreset.size(); i++) {
 			auto & p = paramsPreset[i];
@@ -1049,7 +1091,7 @@ private:
 					pr.setWithoutEventNotifications(pr.getMin());
 				else
 					pr.set(pr.getMin());
-				ofLogNotice("ofxSurfingPresetsLite") << pr.getName() << " = " << pr.get();
+				ofLogNotice("SurfingPresetsLite") << pr.getName() << " = " << pr.get();
 			}
 
 			else if (p.type() == typeid(ofParameter<int>).name()) {
@@ -1058,7 +1100,7 @@ private:
 					pr.setWithoutEventNotifications(pr.getMin());
 				else
 					pr.set(pr.getMin());
-				ofLogNotice("ofxSurfingPresetsLite") << pr.getName() << " = " << pr.get();
+				ofLogNotice("SurfingPresetsLite") << pr.getName() << " = " << pr.get();
 			}
 
 			// include booleans
@@ -1069,8 +1111,25 @@ private:
 					pr.setWithoutEventNotifications(b);
 				else
 					pr.set(b);
-				ofLogNotice("ofxSurfingPresetsLite") << pr.getName() << " = " << pr.get();
+				ofLogNotice("SurfingPresetsLite") << pr.getName() << " = " << pr.get();
 			}
+
+#if 0 //disable to avoid both color same \
+	// colors
+			else if (p.type() == typeid(ofParameter<ofColor>).name()) {
+				ofParameter<ofColor> pr = p.cast<ofColor>();
+				ofColor c;
+				c.setBrightness(64);
+				c.setSaturation(0);
+				c.setHue(0);
+
+				if (bSilent)
+					pr.setWithoutEventNotifications(c);
+				else
+					pr.set(c);
+				ofLogNotice("SurfingPresetsLite") << pr.getName() << " = " << pr.get();
+			}
+#endif
 		}
 
 		//if (!bSilent) bIsRetrigged = true;
@@ -1092,7 +1151,7 @@ private:
 
     //--------------------------------------------------------------
     void doResetParamsFull(ResetPramsType MS_type) {
-        ofLogNotice("ofxSurfingPresetsLite") << (__FUNCTION__);
+        ofLogNotice("SurfingPresetsLite") << (__FUNCTION__);
 
 
         for (int i = 0; i < paramsPreset.size(); i++)

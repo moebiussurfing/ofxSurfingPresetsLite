@@ -202,18 +202,18 @@ namespace ofxSurfingHelpers {
 
 */
 
-class surfingSceneTesters
+class SurfingSceneTesters
 {
 public:
 
 	ofParameter<int> amount{ "Amount", 10, 1, 100 };
 	ofParameter<float> scale{ "Scale", 0, -1, 1 };
-	ofParameter<float> speed{ "Speed", 0, 0, 1 };
 	ofParameter<ofColor> c1{ "Color 1",ofColor::blue, ofColor(0,0), ofColor(255,255) };
 	ofParameter<ofColor> c2{ "Color 2",ofColor::white, ofColor(0,0), ofColor(255,255) };
 	ofParameter<bool> bNoise{ "Noise", false };
-	ofParameter<bool> bUpdateable{ "EnableUpdate", true };
-	ofParameterGroup params{ "Scene", amount, scale, speed, bNoise , c1, c2, bUpdateable };
+	ofParameter<float> speedAnim{ "SpeedAnim", 0, 0, 1 };
+	ofParameter<bool> bUpdateAnim{ "UpdateAnim", true };
+	ofParameterGroup params { "Scene", amount, scale, speedAnim, bUpdateAnim, bNoise, c1, c2 };
 
 	void setColor1(ofColor c) { c1 = c; };
 	void setColor2(ofColor c) { c2 = c; };
@@ -232,10 +232,10 @@ public:
 		float x = ofGetWidth() * 0.5f;
 		float y = ofGetHeight() * 0.5f;
 
-		float _speed = ofMap(speed, 0, 1, 2, 0.3, true);
+		float _speed = ofMap(speedAnim, 0, 1, 2, 0.3, true);
 		static float vBounce;
 
-		if (bUpdateable)
+		if (bUpdateAnim)
 			vBounce = ofxSurfingHelpersT::Bounce(_speed);
 
 		float r0 = 0.75 + vBounce;

@@ -10,6 +10,6 @@ public:
 	void setup();
 	void draw();
 
-	ofxSurfingPresetsLiteOfxGui presetsManager;
-	surfingSceneTesters scene;
+	SurfingPresetsLiteOfxGui presetsManager;
+	SurfingSceneTesters scene;
 };

@@ -12,8 +12,8 @@ public:
 	void draw();
 	void keyPressed(int key);
 
-	surfingSceneTesters scene;
+	SurfingSceneTesters scene;
 
 	ofxSurfingGui ui;
-	ofxSurfingPresetsLiteImGui presetsManager;
+	SurfingPresetsLiteImGui presetsManager;
 };

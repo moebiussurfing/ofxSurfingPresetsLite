@@ -5,7 +5,7 @@
 
 //----
 
-class ofxSurfingPresetsLiteOfxGui : public ofxSurfingPresetsLite {
+class SurfingPresetsLiteOfxGui : public SurfingPresetsLite {
 
 public:
 	ofxPanel gui;
@@ -16,7 +16,7 @@ public:
 
 public:
 	void setupGui() override {
-		ofLogNotice("ofxSurfingPresetsLite") << "setupGui()";
+		ofLogNotice("SurfingPresetsLite") << "setupGui()";
 
 		gui.setup(parameters);
 		guiParams.setup(paramsPreset);
@@ -30,11 +30,13 @@ public:
 	}
 
 	void refreshGui() override {
-		ofLogNotice("ofxSurfingPresetsLite") << "refreshGui()";
+		ofLogNotice("SurfingPresetsLite") << "refreshGui()";
 
-		gui.getGroup(paramsInternal.getName()).minimize();
 		gui.getGroup(paramsManager.getName()).minimize();
 		gui.getGroup(paramsKit.getName()).minimize();
+		gui.getGroup(paramsAdvanced.getName()).minimize();
+		gui.getGroup(paramsAdvanced.getName()).getGroup(paramsInternal.getName())
+			.minimize();
 	}
 
 	void drawGui() {
@@ -50,8 +52,6 @@ public:
 
 	void drawHelp() override {
 		if (!bHelp) return;
-
-		//buildHelp();
 
 		if (bGui && bGuiParams)
 			ofxSurfing::ofDrawBitmapStringBox(sHelp, &guiParams);
