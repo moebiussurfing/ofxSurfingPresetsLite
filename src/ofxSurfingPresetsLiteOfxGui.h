@@ -35,19 +35,18 @@ public:
 		gui.getGroup(paramsManager.getName()).minimize();
 		gui.getGroup(paramsKit.getName()).minimize();
 		gui.getGroup(paramsAdvanced.getName()).minimize();
-		gui.getGroup(paramsAdvanced.getName()).getGroup(paramsInternal.getName())
-			.minimize();
+		gui.getGroup(paramsAdvanced.getName()).getGroup(paramsInternal.getName()).minimize();
 	}
 
 	void drawGui() {
 		if (!bGui) return;
 		drawHelp();
 
+		guiManager.draw();
+
 		//ofxSurfing::setGuiPositionRightTo(guiParams,gui);
 		//gui.draw();
 		//if (bGuiParams) guiParams.draw();
-
-		guiManager.draw();
 	}
 
 	void drawHelp() override {

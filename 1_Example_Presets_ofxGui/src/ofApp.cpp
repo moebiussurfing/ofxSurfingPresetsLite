@@ -3,11 +3,19 @@
 //--------------------------------------------------------------
 void ofApp::setup() {
 #if 1
-	ofSetWindowPosition(-1900, 50);
-	ofSetWindowShape(1280, 720);
+	int w = 1280;
+	int h = 720;
+	ofSetWindowShape(w, h);
+	ofSetWindowPosition(-1920 + 1920 / 2 - w / 2, 1080 / 2 - h / 2);
+	// position in left monitor and center on the screen
 #endif
 
-	presetsManager.addGroup(scene.params);
+	// Exclude parameter from the presets
+	scene.bUpdateAnim.setSerializable(false);
+
+	presetsManager.setPathGlobal("myApp");
+	presetsManager.setPathPresets("myKit01");
+	presetsManager.setup(scene.params);
 }
 
 //--------------------------------------------------------------
@@ -17,4 +25,7 @@ void ofApp::draw() {
 	scene.draw();
 
 	presetsManager.drawGui();
+
+	// Simple callback to listen to index changes.
+	//if (presetsManager.isChangedIndex()) ofLogNotice("ofApp") << "index changed";
 }

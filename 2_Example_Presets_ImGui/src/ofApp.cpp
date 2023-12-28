@@ -3,12 +3,15 @@
 //--------------------------------------------------------------
 void ofApp::setup() {
 #if 1
-	ofSetWindowPosition(-1900, 50);
-	ofSetWindowShape(1850, 1060);
+	int w = 1900;
+	int h = 1030;
+	ofSetWindowShape(w, h);
+	ofSetWindowPosition(-1920 + 1920 / 2 - w / 2, 1080 / 2 - h / 2);
+	// position in left monitor and center on the screen
 #endif
 
 	presetsManager.setUiPtr(&ui);
-	presetsManager.addGroup(scene.params);
+	presetsManager.setup(scene.params);
 }
 
 //--------------------------------------------------------------

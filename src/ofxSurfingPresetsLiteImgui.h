@@ -18,7 +18,7 @@ TODO
 
 class SurfingPresetsLiteImGui : public SurfingPresetsLite {
 protected:
-	virtual void destructUI() override {
+	void destructUI() override {
 		ofLogNotice("SurfingPresetsLiteImGui") << "destructUI()";
 
 		delete ui;
@@ -38,7 +38,7 @@ public:
 	void setupParameters() override {
 		ofLogNotice("SurfingPresetsLiteImGui") << "setupParameters()";
 
-		indexName.setSerializable(false);
+		//indexName.setSerializable(false);
 		paramsKit.setSerializable(false);
 
 		paramsBrowse.add(index);
@@ -257,13 +257,13 @@ public:
 
 	//----
 
-	// Parameters fo the preseted group
+	// Parameters for the preseted group
 	void drawImGuiParameters() {
 #if 1
 		string n = "PARAMETERS " + name;
 		if (ui->BeginWindow(n))
 #else
-		if (ui->BeginWindow(bGuiParams)) {
+		if (ui->BeginWindow(bGuiParams))
 #endif
 		{
 			ui->Add(ui->bMinimize, OFX_IM_TOGGLE_ROUNDED_SMALL);
@@ -290,9 +290,13 @@ public:
 
 	//----
 
+#if 1
+	// test bFoldered_
 	// Some windows panels also combined
 	void drawImGuiManager(bool bWindowed = false, bool bMinimized_ = false, bool bFoldered_ = false, bool bOpen = true) {
 		if (!bGui) return;
+
+		string sTip = "";
 
 		bool bOpen_ = true;
 		if (bWindowed) {
@@ -303,7 +307,7 @@ public:
 		}
 
 		if (bOpen_) {
-			string s = filename;
+			string s = fileBaseName;
 			string sn = "Presets";
 
 			bool b;
@@ -333,39 +337,43 @@ public:
 					if (ui->isMaximized()) {
 						ui->Add(vLoad, OFX_IM_BUTTON_SMALL, 2, true);
 						ui->AddTooltip("Discard changes\nand reload file");
-						if (ui->Add(vSave,
-								(bAutoSave ? OFX_IM_BUTTON_SMALL : OFX_IM_BUTTON_SMALL_BORDER_BLINK), 2)) {
-							bOverInputText = false;
-							indexName = s;
-						}
+						ui->Add(vSave, (bAutoSave ? OFX_IM_BUTTON_SMALL : OFX_IM_BUTTON_SMALL_BORDER_BLINK), 2);
 						ui->AddTooltip("Save changes\nto file");
 
 						ui->Add(bAutoSave, OFX_IM_TOGGLE_SMALL_BORDER_BLINK);
 						//ui->Add(vRename, OFX_IM_BUTTON_SMALL, 2, true);
 						//ui->AddTooltip("Change file name");
-						string s_;
 						if (bAutoSave) {
-							s_ = "Edit Mode";
+							sTip = "Edit Mode";
 						} else {
-							s_ = "Manual save Mode";
+							sTip = "Manual save Mode";
 						}
-						ui->AddTooltip(s_);
+						ui->AddTooltip(sTip);
 
+	#if 0
 						if (!bOverInputText) {
 							ui->Add(vNew, OFX_IM_BUTTON_SMALL, 2);
-							string s_;
 							if (bMod_CONTROL) {
-								s_ = "Release control\nto rename";
+								sTip = "Release control\nto rename";
 							} else {
-								s_ = "Press control\nto create";
+								sTip = "Press control\nto create";
 							}
-							ui->AddTooltip(s_);
+							ui->AddTooltip(sTip);
 						} else {
 							if (ui->AddButton("Cancel", OFX_IM_BUTTON_SMALL_BORDER_BLINK, 2)) {
 								bOverInputText = false;
 								bDoingNew = false;
-							}
+							}}
+	#else
+						ui->Add(vNew, OFX_IM_BUTTON_SMALL, 2);
+						if (bMod_CONTROL) {
+							sTip = "Release control\nto rename";
+						} else {
+							sTip = "Press control\nto create";
 						}
+						ui->AddTooltip(sTip);
+	#endif
+
 						ui->SameLine();
 						ui->Add(vDelete, OFX_IM_BUTTON_SMALL, 2);
 						ui->AddTooltip("Remove preset file");
@@ -415,7 +423,7 @@ public:
 								doClearKit(false);
 								ImGui::CloseCurrentPopup();
 
-								if (bOverInputText) bOverInputText = false;
+								//if (bOverInputText) bOverInputText = false;
 							}
 
 							ImGui::EndPopup();
@@ -425,17 +433,20 @@ public:
 						ui->Add(vScanKit, OFX_IM_BUTTON_SMALL, 2);
 						ui->AddTooltip("Reload folder files");
 
-						if (ui->Add(vPopulateKit, OFX_IM_BUTTON_SMALL, 2)) {
-							if (bOverInputText) bOverInputText = false;
-						}
-						ui->AddTooltip("Clear kit and create \nNew presets copying current");
+						//if (ui->Add(vPopulateKit, OFX_IM_BUTTON_SMALL, 2)) {
+						//	//if (bOverInputText) bOverInputText = false;
+						//}
+						ui->Add(vPopulateKit, OFX_IM_BUTTON_SMALL, 2);
+						ui->AddTooltip("Clear kit and create \n" + ofToString(numPresetsForPopulating) + " new presets copying current");
 						ui->SameLine();
 						ui->Add(vPopulateRandomKit, OFX_IM_BUTTON_SMALL, 2);
-						ui->AddTooltip("Clear kit and create \nNew randomized presets ");
+						ui->AddTooltip("Clear kit and populate \n" + ofToString(numPresetsForPopulating) + "new randomized presets ");
 					}
+				}
 
-					// minimized
-					else {
+				// minimized
+				else {
+	#if 0
 						if (ui->Add(vSave,
 								(bOverInputText ? OFX_IM_BUTTON_SMALL_BORDER_BLINK : OFX_IM_BUTTON_SMALL), 2, true)) {
 							bOverInputText = false;
@@ -449,81 +460,87 @@ public:
 								bOverInputText = false;
 								bDoingNew = false;
 							}
-						}
-					}
-
-					//--
-
-					if (bOverInputText) {
-						if (ui->isMaximized()) ui->AddSpacing();
-
-						//TODO: use string params
-						int _w = ui->getWidgetsWidth() * 0.9f;
-						ImGui::PushItemWidth(_w);
-						{
-							bool b = ImGui::InputText("##NAME", &s);
-							if (b) {
-								ofLogNotice("SurfingPresetsLiteImGui") << "InputText:" << s.c_str();
-								setFilename(s);
-							}
-							if (ImGui::IsItemDeactivated() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
-								bOverInputText = false;
-						}
-						ImGui::PopItemWidth();
-					}
+	#else
+					ui->Add(vSave, OFX_IM_BUTTON_SMALL, 2, true);
+					ui->Add(vNew, OFX_IM_BUTTON_SMALL, 2);
+	#endif
 				}
-
-				if (ui->bMinimize && !bGuiExpand) {
-					ui->PushButtonRepeat();
-					ui->Add(vPrevious, OFX_IM_BUTTON_MEDIUM, 2, true);
-					ui->Add(vNext, OFX_IM_BUTTON_MEDIUM, 2);
-					ui->PopButtonRepeat();
-				}
-
-				//--
-
-				if (ui->isMaximized() && index.getMax() > -1) ui->AddSpacingSeparated();
-
-				if (bGuiExpand) // expanded
-				{
-					ui->PushButtonRepeat();
-					ui->Add(vPrevious, OFX_IM_BUTTON_MEDIUM, 2, true);
-					ui->Add(vNext, OFX_IM_BUTTON_MEDIUM, 2);
-					ui->PopButtonRepeat();
-					ui->AddCombo(index, filenames);
-				} else // not expanded
-				{
-					if (ui->isMaximized()) {
-						ui->PushButtonRepeat();
-						ui->Add(vPrevious, OFX_IM_BUTTON_MEDIUM, 2, true);
-						ui->Add(vNext, OFX_IM_BUTTON_MEDIUM, 2);
-						ui->PopButtonRepeat();
-						ui->AddCombo(index, filenames);
-
-						ui->Add(vLoad, OFX_IM_BUTTON_SMALL, 2, true);
-						ui->Add(vSave,
-							(bAutoSave ? OFX_IM_BUTTON_SMALL : OFX_IM_BUTTON_SMALL_BORDER_BLINK), 2);
-					}
-				}
-
-				//--
-
-				if (ui->isMaximized()) ui->AddSpacingSeparated();
-
-				//--
-
-				drawImGuiClicker();
-
-				//--
-
-				if (b && bFoldered_) ui->EndTree();
 			}
+
+			//--
+
+	#if 0
+		if (bOverInputText) {
+
+					if (ui->isMaximized()) ui->AddSpacing();
+					//TODO: use string params
+					int _w = ui->getWidgetsWidth() * 0.9f;
+					ImGui::PushItemWidth(_w);
+					{
+						bool b = ImGui::InputText("##NAME", &s);
+						if (b) {
+							ofLogNotice("SurfingPresetsLiteImGui") << "InputText:" << s.c_str();
+							setFilename(s);
+						}
+						if (ImGui::IsItemDeactivated() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
+							bOverInputText = false;
+					}
+					ImGui::PopItemWidth();
+		}
+	#endif
+			if (ui->bMinimize && !bGuiExpand) {
+				ui->PushButtonRepeat();
+				ui->Add(vPrevious, OFX_IM_BUTTON_MEDIUM, 2, true);
+				ui->Add(vNext, OFX_IM_BUTTON_MEDIUM, 2);
+				ui->PopButtonRepeat();
+			}
+
+			//--
+
+			if (ui->isMaximized() && index.getMax() > -1) ui->AddSpacingSeparated();
+
+			if (bGuiExpand) // expanded
+			{
+				ui->PushButtonRepeat();
+				ui->Add(vPrevious, OFX_IM_BUTTON_MEDIUM, 2, true);
+				ui->Add(vNext, OFX_IM_BUTTON_MEDIUM, 2);
+				ui->PopButtonRepeat();
+				ui->AddCombo(index, fileBaseNames);
+			}
+
+			else { // not expanded
+				if (ui->isMaximized()) {
+					ui->PushButtonRepeat();
+					ui->Add(vPrevious, OFX_IM_BUTTON_MEDIUM, 2, true);
+					ui->Add(vNext, OFX_IM_BUTTON_MEDIUM, 2);
+					ui->PopButtonRepeat();
+					ui->AddCombo(index, fileBaseNames);
+
+					ui->Add(vLoad, OFX_IM_BUTTON_SMALL, 2, true);
+					ui->Add(vSave, (bAutoSave ? OFX_IM_BUTTON_SMALL : OFX_IM_BUTTON_SMALL_BORDER_BLINK), 2);
+				}
+			}
+
+			//--
+
+			if (ui->isMaximized()) ui->AddSpacingSeparated();
+
+			//--
+
+			drawImGuiClicker();
+
+			//--
+
+			if (b && bFoldered_) ui->EndTree();
 		}
 
 		if (bWindowed && bOpen_) {
 			ui->EndWindow();
 		}
 	}
+#else
+	void drawImGuiManager(bool b = 0) {};
+#endif
 
 	//----
 
@@ -546,7 +563,7 @@ public:
 				ui->Add(vPrevious, OFX_IM_BUTTON_MEDIUM, 2, true);
 				ui->Add(vNext, OFX_IM_BUTTON_MEDIUM, 2);
 				ui->PopButtonRepeat();
-				ui->AddCombo(index, filenames);
+				ui->AddCombo(index, fileBaseNames);
 			}
 
 			if (bWindowed && bOpen) {
