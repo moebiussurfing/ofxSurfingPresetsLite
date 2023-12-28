@@ -5,7 +5,9 @@ A simple class to handle an `ofParameterGroup` presets with some helpers to rand
 This class is based on and separated from [ofxSurfingHelpers](https://github.com/moebiussurfing/ofxSurfingHelpers) / [Example](https://github.com/moebiussurfing/ofxSurfingHelpers/tree/master/Examples/PresetsLite).  
 
 ## Features
-- Use your preferred UI lib: `ofxGui` or `ImGui` (**ofxSurfingImGui**).
+- Use your preferred **UI library**:
+  - `ofxGui` or `ImGui` (**ofxSurfingImGui**).
+  - Could implement other `UI library` extending the `baseClass`: **ofxSurfingPresetsLite.h**.
 - Auto-created **UI controls** for added `ofParameterGroup` params content.
 - Auto-populate a **Kit** of presets if no files are found. (App is opening for the first time).
 - Manager:
