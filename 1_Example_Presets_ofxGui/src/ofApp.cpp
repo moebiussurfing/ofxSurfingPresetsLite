@@ -2,6 +2,9 @@
 
 //--------------------------------------------------------------
 void ofApp::setup() {
+
+	// OPTIONAL: 
+	// customize window
 #if 1
 	int w = 1280;
 	int h = 720;
@@ -10,11 +13,19 @@ void ofApp::setup() {
 	// position in left monitor and center on the screen
 #endif
 
-	// Exclude parameter from the presets
+#if 1
+	// OPTIONAL:
+	// Exclude a parameter from the presets group
 	scene.bUpdateAnim.setSerializable(false);
+#endif
 
-	presetsManager.setPathGlobal("myApp");
-	presetsManager.setPathPresets("myKit01");
+#if 1 
+	// OPTIONAL: 
+	// for custom paths or multiple kits
+	//presetsManager.setPathGlobal("myApp");
+	presetsManager.setKitName("myKit01");
+#endif
+
 	presetsManager.setup(scene.params);
 }
 

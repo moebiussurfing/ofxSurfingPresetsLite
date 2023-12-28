@@ -480,7 +480,7 @@ public:
 						bool b = ImGui::InputText("##NAME", &s);
 						if (b) {
 							ofLogNotice("SurfingPresetsLiteImGui") << "InputText:" << s.c_str();
-							setFilename(s);
+							setFileBaseName(s);
 						}
 						if (ImGui::IsItemDeactivated() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
 							bOverInputText = false;

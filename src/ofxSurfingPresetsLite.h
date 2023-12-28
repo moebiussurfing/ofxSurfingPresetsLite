@@ -372,8 +372,13 @@ public:
 		sHelp += "File:\n";
 		if (index < dir.size()) sHelp += dir[index].path() + "\n";
 		sHelp += "\n";
-		sHelp += "Path:\n";
-		sHelp += pathPresets + "\n";
+		if (pathGlobal != "") {
+			sHelp += "Path Global:\n";
+			sHelp += pathGlobal + "\n";
+			sHelp += "\n";
+		}
+		sHelp += "Kit Name:\n";
+		sHelp += kitName + "\n";
 		sHelp += "\n";
 		sHelp += "Files:\n";
 		if (dir.size() > 0) sHelp += ofToString(getListFiles()) + "\n";
@@ -396,7 +401,7 @@ private:
 		ofLogNotice("SurfingPresetsLite") << "doSave(" << bRefreshFiles << "): " << fileBaseName;
 
 		// Save preset
-		ofxSurfing::saveGroup(paramsPreset, pathPresets + "\\" + fileBaseName + ".json");
+		ofxSurfing::saveGroup(paramsPreset, getPresetPath());
 
 		//--
 
@@ -430,7 +435,7 @@ private:
 		ofLogNotice("SurfingPresetsLite") << "doLoad(): " << fileBaseName;
 
 		// Load preset
-		ofxSurfing::loadGroup(paramsPreset, pathPresets + "\\" + fileBaseName + ".json");
+		ofxSurfing::loadGroup(paramsPreset, getPresetPath());
 	}
 
 	//--
@@ -441,6 +446,7 @@ public:
 	}
 
 private:
+	//TODO: allow more than one group..
 	void addGroup(ofParameterGroup & group) {
 		// make a pointer, bc maybe that = no works well..
 
@@ -461,28 +467,25 @@ private:
 	}
 
 public:
-	// must be settled before setting pathPresets. Must call setPathPresets after this too.
-	void setPathGlobal(string p) {
+	void setPathGlobal(const string &p) {
 		pathGlobal = p;
-		ofxSurfing::checkFolderOrCreate(pathGlobal);
+		ofLogNotice("SurfingPresetsLite") << "setPathGlobal(): " << pathGlobal;
 	}
 
 public:
 	// related to inside pathGlobal. Must call setPathGlobal before this too.
-	void setPathPresets(string p) {
-		if (pathGlobal != "")
-			pathPresets = pathGlobal + "\\" + p;
-		else
-			pathPresets = p;
-		ofxSurfing::checkFolderOrCreate(pathPresets);
-		ofLogNotice("SurfingPresetsLite") << "setPathPresets(): " << pathPresets;
+	void setKitName(const string & p) {
+		kitName = p;
+		ofLogNotice("SurfingPresetsLite") << "setKitName(): " << kitName;
 	}
 
-	void setFilename(string p) {
+private:
+	void setFileBaseName(const string & p) {
 		fileBaseName = p;
-		ofLogNotice("SurfingPresetsLite") << "setFilename(): " << fileBaseName;
+		ofLogNotice("SurfingPresetsLite") << "setFileBaseName(): " << fileBaseName;
 	}
 
+public:
 	void doLoadPrevious() {
 		ofLogNotice("SurfingPresetsLite") << "doLoadPrevious()";
 		if (index.getMax() == -1) return;
@@ -678,8 +681,13 @@ private:
 					string nTo = fileBaseNames[index];
 					ofFile f;
 
-					nTo = pathPresets + "\\" + nTo + ".json";
-					nFrom = pathPresets + "\\" + nFrom + ".json";
+					if (pathGlobal != "") {
+						nTo = pathGlobal + "\\" + kitName + "\\" + nTo + ".json";
+						nFrom = pathGlobal + "\\" + kitName + "\\" + nFrom + ".json";
+					} else {
+						nTo = kitName + "\\" + nTo + ".json";
+						nFrom = kitName + "\\" + nFrom + ".json";
+					}
 
 					bool bf = f.open(nTo);
 					bool bt = f.renameTo(nFrom, true, true);
@@ -705,6 +713,7 @@ private:
 
 public:
 	ofParameterGroup parameters { "PRESETS MANAGER" };
+protected:
 	ofParameterGroup paramsPreset { "Preset" };
 	ofParameterGroup paramsBrowse { "Browse" };
 	ofParameterGroup paramsManager { "Manager" };
@@ -717,8 +726,8 @@ protected:
 	string name = ""; // only for instance naming.
 
 private:
-	string pathPresets = "Presets"; // path to put the preset files. bin/data/Presets/
-	string pathGlobal = ""; // Optional main folder where nested folder goes inside. bin/data/myApp/Presets/
+	string kitName = "Kit"; // path to put the preset files. bin/data/Kit/
+	string pathGlobal = ""; // Optional main folder where nested folder goes inside. bin/data/myApp/Kit/
 
 	// Files
 protected:
@@ -731,18 +740,35 @@ protected:
 	//--
 
 public:
-	int getNumPresets() {
+	string getPresetPath() const {
+		string path;
+		if (pathGlobal != "")
+			path = pathGlobal + "\\" + kitName + "\\" + fileBaseName + ".json";
+		else
+			path = kitName + "\\" + fileBaseName + ".json";
+		return path;
+	}
+	string getKitPath() const {
+		string path;
+		if (pathGlobal != "")
+			path = pathGlobal + "\\" + kitName ;
+		else
+			path = kitName;
+		return path;
+	}
+
+	int getNumPresets() const{
 		return index.getMax() + 1;
 	}
-	int getPresetIndexLast() {
+	int getPresetIndexLast() const {
 		return index.getMax();
 	}
-	int getPresetIndex() {
+	int getPresetIndex() const {
 		return index.get();
 	}
 
 protected:
-	int getNumFiles() {
+	int getNumFiles() const {
 		return fileBaseNames.size();
 	}
 
@@ -757,8 +783,16 @@ protected:
 			string n = dir[i].getBaseName(); //current name
 			string n_ = string((i < 10) ? "0" : "") + ofToString(i); //expected name
 			if (n_ != n) {
-				string pf = pathPresets + "\\" + n + ".json";
-				string pt = pathPresets + "\\" + n_ + ".json";
+				string pf;//from
+				string pt;//to
+				if (pathGlobal != "") {
+					pf = pathGlobal + "\\" + kitName + "\\" + n + ".json";
+					pt = pathGlobal + "\\" + kitName + "\\" + n_ + ".json";
+				} else {
+					pf = kitName + "\\" + n + ".json";
+					pt = kitName + "\\" + n_ + ".json";
+				}
+
 				ofLogNotice("SurfingPresetsLite") << "Rename file #" << i;
 				ofLogNotice("SurfingPresetsLite") << pf << " > " << pt;
 				ofFile file(pf);
@@ -776,15 +810,15 @@ protected:
 
 	bool doRefreshKitFiles() {
 		// Must call for reading folder, when deleting or creating a new preset.
-		ofLogNotice("SurfingPresetsLite") << "doRefreshKitFiles(): " << pathPresets;
+		ofLogNotice("SurfingPresetsLite") << "doRefreshKitFiles(): " << kitName;
 
-		dir.listDir(pathPresets);
+		dir.listDir(getKitPath());
+		
 		dir.sort();
 
 		bool bEmpty = (dir.size() == 0);
-
 		if (bEmpty) {
-			ofLogWarning("SurfingPresetsLite") << "doRefreshKitFiles(): " << pathPresets << " directory is empty.";
+			ofLogWarning("SurfingPresetsLite") << "doRefreshKitFiles(): " << getKitPath() << " directory is empty.";
 		} else {
 			doReorganizeKitFiles();
 		}
@@ -809,7 +843,9 @@ protected:
 			ofLogNotice("SurfingPresetsLite") << "doListFiles(): " << f.getAbsolutePath();
 		}
 	}
-	string getListFiles() {
+	string getListFiles() const{
+		ofLogNotice("SurfingPresetsLite") << "getListFiles()"; 
+
 		string l;
 		size_t i = 0;
 		for (auto f : dir) {
@@ -827,13 +863,12 @@ protected:
 		ofLogNotice("SurfingPresetsLite") << "doDelete() Index: " << index;
 
 		fileBaseName = fileBaseNames[index];
-		//filename = dir[index].getBaseName();
+		//fileBaseName = dir[index].getBaseName();
 
 		ofLogNotice("SurfingPresetsLite") << "doDelete() Filename: " << fileBaseName;
 
-		string p = pathPresets + "\\" + fileBaseName + ".json";
+		string p = getPresetPath();
 		ofLogNotice("SurfingPresetsLite") << "doDelete() Look for: " << p;
-
 		bool b = ofFile::removeFile(p);
 
 		if (b) {
@@ -866,7 +901,7 @@ protected:
 			int sz = dir.size();
 			n = string((sz < 10) ? "0" : "") + ofToString(sz);
 		}
-		setFilename(n);
+		setFileBaseName(n);
 
 		doSave(true);
 
@@ -945,7 +980,7 @@ protected:
 
 		else if (key == OF_KEY_F5) {
 			doRefreshKitFiles();
-			doRefreshKitFiles();//TODO: fix
+			doRefreshKitFiles(); //TODO: fix
 		}
 
 		else if (key == OF_KEY_UP)
@@ -1169,10 +1204,10 @@ private:
 	//
 	// 1.
 	//presetsManager.setPathGlobal("TEXT");//parent folder
-	//presetsManager.setPathPresets("Presets");//presets folder
+	//presetsManager.setKitName("Presets");//presets folder
 	//
 	// 2.
-	presetsManager.setPathPresets("TEXT\\Presets");//you can call only this too!
+	presetsManager.setKitName("TEXT\\Presets");//you can call only this too!
 	*/
 
 	//--
