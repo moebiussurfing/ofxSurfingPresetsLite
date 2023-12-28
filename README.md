@@ -1,6 +1,6 @@
 ## Overview
 
-A simple class to handle an `ofParameterGroup` presets with some helpers to randomize and kit organization.  
+A simple class to handle an `ofParameterGroup` presets with some helpers to randomize and `Kit organization`.  
 
 This class is based on and separated from [ofxSurfingHelpers](https://github.com/moebiussurfing/ofxSurfingHelpers).  
 
