@@ -4,6 +4,16 @@ A simple class to handle an `ofParameterGroup` presets with some helpers to rand
 
 This class is based on and separated from [ofxSurfingHelpers](https://github.com/moebiussurfing/ofxSurfingHelpers).  
 
+## Features
+- Use your preferred UI lib: `ofxGui` or `ImGui` (**ofxSurfingImGui**).
+- Auto-created UI controls for added `ofParameterGroup` params content.
+- Auto-populate a Kit of presets.
+- Manager:
+  - Simple randomizer and reset preset.
+  - Populate a Kit of copies from selected preset or new randomizations.
+- Persistent settings as index selected, matrix sizes (ImGui) and settings.
+- Copy and Swap presets on the matrix clicker. (ImGui)
+
 ## Screenshots
 ### 1_Example_Presets_ofxGui
 ![](1_Example_Presets_ofxGui/Capture.PNG)
@@ -13,17 +23,19 @@ This class is based on and separated from [ofxSurfingHelpers](https://github.com
 ## Required
 - [ofxSurfingHelpersLite](https://github.com/moebiussurfing/ofxSurfingHelpersLite)
 #### For Example 1
-- ofxGui / OF core
+- **ofxGui** / **OF core**
 #### For Example 2
 - [ofxSurfingImGui](https://github.com/moebiussurfing/ofxSurfingImGui/tree/develop)
 
 ### TODO
-- Add randomizer for nested groups.
 - Add multiple independent groups.
-- Add multiple Kits managment.
+- Add randomizer for nested groups.
+  - Improved randomizer: center value and power.
+- Add multiple Kits management.
 
 ## TESTED SYSTEMS
 * **Windows 11** / **VS 2022** / **OF 0.12+** @[GitHub master branch](https://github.com/openframeworks/openFrameworks)
+* Should work probably also on `macOS` and `Linux`.
 
 ## LICENSE
 **MIT License**
