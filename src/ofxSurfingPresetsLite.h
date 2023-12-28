@@ -406,6 +406,8 @@ public:
 
 private:
 	void doSave(bool bRefreshFiles = true) {
+		// Here, fileBaseName is/must be already named and ready to be used here!
+			
 		if (getNumFiles() == 0) fileBaseName = "00"; // prepare name for first preset
 
 		// Note that saves the previously settled file name when picking the index!
@@ -430,7 +432,7 @@ private:
 			index = index_;
 		}
 
-		if (index < dir.size()) {
+		if (index < dir.size() && index>=0) {
 			fileBaseName = dir[index].getBaseName();
 			doLoad(fileBaseName);
 		} else {
@@ -457,10 +459,10 @@ public:
 	}
 
 private:
-	//TODO: allow more than one group..
+	//TODO: allow more than one group...
 	void addGroup(ofParameterGroup & group) {
 
-		//TODO: make a pointer, bc maybe that = no works well..
+		//TODO: make a pointer, bc maybe that `=` not work well..
 		auto ptype = group.type();
 		bool isGroup = ptype == typeid(ofParameterGroup).name();
 		if (isGroup) {
@@ -469,7 +471,7 @@ private:
 
 		name = group.getName();
 
-		setNameUI(name);
+		setNameUI(name);//rename bGui param
 		parameters.setName(ofToString("PRESETS ") + name);
 
 		pathSettings = name + ofToString("_Presets.json");
@@ -507,8 +509,8 @@ public:
 		else if (i == index.getMin())
 			if (bCycled)
 				i = index.getMax();
-			else
-				i = index.getMin();
+			//else
+				//i = index.getMin();
 		index.set(i);
 	}
 
@@ -521,8 +523,8 @@ public:
 		else if (i == index.getMax())
 			if (bCycled)
 				i = index.getMin();
-			else
-				i = index.getMax();
+			//else
+				//i = index.getMax();
 		index.set(i);
 	}
 
@@ -568,7 +570,6 @@ private:
 		}
 
 		else if (name == vSave.getName()) {
-			// filename is already named and ready to be used here!
 			doSave(false);
 		}
 
@@ -752,6 +753,8 @@ protected:
 
 public:
 	string getPresetPath() const {
+		//fileBaseName must/should be settled before being here!
+		//fileBaseName will be updated when moving the index around the Kit presets...
 		string path;
 		if (pathGlobal != "")
 			path = pathGlobal + "\\" + kitName + "\\" + fileBaseName + ".json";
@@ -808,8 +811,9 @@ protected:
 				ofFile file(pf);
 				if (file.exists()) {
 					file.renameTo(pt);
-				}
+				
 				bSomeFileRequiredRename = true;
+				}
 			}
 		}
 
