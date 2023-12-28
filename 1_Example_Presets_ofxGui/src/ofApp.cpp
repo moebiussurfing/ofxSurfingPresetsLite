@@ -3,7 +3,7 @@
 //--------------------------------------------------------------
 void ofApp::setup() {
 
-	// OPTIONAL: 
+	// OPTIONAL:
 	// customize window
 #if 1
 	int w = 1280;
@@ -19,10 +19,10 @@ void ofApp::setup() {
 	scene.bUpdateAnim.setSerializable(false);
 #endif
 
-#if 1 
+#if 0 
 	// OPTIONAL: 
 	// for custom paths or multiple kits
-	//presetsManager.setPathGlobal("myApp");
+	//presetsManager.setPathGlobal("myApp");// OPTIONAL: an optional root folder for better organizing.
 	presetsManager.setKitName("myKit01");
 #endif
 
@@ -37,6 +37,9 @@ void ofApp::draw() {
 
 	presetsManager.drawGui();
 
+#if 0
+	// OPTIONAL:
 	// Simple callback to listen to index changes.
-	//if (presetsManager.isChangedIndex()) ofLogNotice("ofApp") << "index changed";
+	if (presetsManager.isChangedIndex()) ofLogNotice("ofApp") << "index changed";
+#endif
 }

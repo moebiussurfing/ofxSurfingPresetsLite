@@ -350,21 +350,21 @@ public:
 						}
 						ui->AddTooltip(sTip);
 
-	#if 0
-						if (!bOverInputText) {
-							ui->Add(vNew, OFX_IM_BUTTON_SMALL, 2);
-							if (bMod_CONTROL) {
-								sTip = "Release control\nto rename";
-							} else {
-								sTip = "Press control\nto create";
-							}
-							ui->AddTooltip(sTip);
-						} else {
-							if (ui->AddButton("Cancel", OFX_IM_BUTTON_SMALL_BORDER_BLINK, 2)) {
-								bOverInputText = false;
-								bDoingNew = false;
-							}}
-	#else
+	//#if 0
+	//					if (!bOverInputText) {
+	//						ui->Add(vNew, OFX_IM_BUTTON_SMALL, 2);
+	//						if (bMod_CONTROL) {
+	//							sTip = "Release control\nto rename";
+	//						} else {
+	//							sTip = "Press control\nto create";
+	//						}
+	//						ui->AddTooltip(sTip);
+	//					} else {
+	//						if (ui->AddButton("Cancel", OFX_IM_BUTTON_SMALL_BORDER_BLINK, 2)) {
+	//							bOverInputText = false;
+	//							bDoingNew = false;
+	//						}}
+	//#else
 						ui->Add(vNew, OFX_IM_BUTTON_SMALL, 2);
 						if (bMod_CONTROL) {
 							sTip = "Release control\nto rename";
@@ -372,7 +372,7 @@ public:
 							sTip = "Press control\nto create";
 						}
 						ui->AddTooltip(sTip);
-	#endif
+	//#endif
 
 						ui->SameLine();
 						ui->Add(vDelete, OFX_IM_BUTTON_SMALL, 2);
@@ -446,48 +446,48 @@ public:
 
 				// minimized
 				else {
-	#if 0
-						if (ui->Add(vSave,
-								(bOverInputText ? OFX_IM_BUTTON_SMALL_BORDER_BLINK : OFX_IM_BUTTON_SMALL), 2, true)) {
-							bOverInputText = false;
-							indexName = s;
-						}
+	//#if 0
+	//					if (ui->Add(vSave,
+	//							(bOverInputText ? OFX_IM_BUTTON_SMALL_BORDER_BLINK : OFX_IM_BUTTON_SMALL), 2, true)) {
+	//						bOverInputText = false;
+	//						indexName = s;
+	//					}
 
-						if (!bOverInputText) {
-							ui->Add(vNew, OFX_IM_BUTTON_SMALL, 2);
-						} else {
-							if (ui->AddButton("Cancel", OFX_IM_BUTTON_SMALL_BORDER_BLINK, 2)) {
-								bOverInputText = false;
-								bDoingNew = false;
-							}
-	#else
+	//					if (!bOverInputText) {
+	//						ui->Add(vNew, OFX_IM_BUTTON_SMALL, 2);
+	//					} else {
+	//						if (ui->AddButton("Cancel", OFX_IM_BUTTON_SMALL_BORDER_BLINK, 2)) {
+	//							bOverInputText = false;
+	//							bDoingNew = false;
+	//						}
+	//#else
 					ui->Add(vSave, OFX_IM_BUTTON_SMALL, 2, true);
 					ui->Add(vNew, OFX_IM_BUTTON_SMALL, 2);
-	#endif
+	//#endif
 				}
 			}
 
 			//--
 
-	#if 0
-		if (bOverInputText) {
+	//#if 0
+	//	if (bOverInputText) {
 
-					if (ui->isMaximized()) ui->AddSpacing();
-					//TODO: use string params
-					int _w = ui->getWidgetsWidth() * 0.9f;
-					ImGui::PushItemWidth(_w);
-					{
-						bool b = ImGui::InputText("##NAME", &s);
-						if (b) {
-							ofLogNotice("SurfingPresetsLiteImGui") << "InputText:" << s.c_str();
-							setFileBaseName(s);
-						}
-						if (ImGui::IsItemDeactivated() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
-							bOverInputText = false;
-					}
-					ImGui::PopItemWidth();
-		}
-	#endif
+	//				if (ui->isMaximized()) ui->AddSpacing();
+	//				//TODO: use string params
+	//				int _w = ui->getWidgetsWidth() * 0.9f;
+	//				ImGui::PushItemWidth(_w);
+	//				{
+	//					bool b = ImGui::InputText("##NAME", &s);
+	//					if (b) {
+	//						ofLogNotice("SurfingPresetsLiteImGui") << "InputText:" << s.c_str();
+	//						setFileBaseName(s);
+	//					}
+	//					if (ImGui::IsItemDeactivated() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
+	//						bOverInputText = false;
+	//				}
+	//				ImGui::PopItemWidth();
+	//	}
+	//#endif
 			if (ui->bMinimize && !bGuiExpand) {
 				ui->PushButtonRepeat();
 				ui->Add(vPrevious, OFX_IM_BUTTON_MEDIUM, 2, true);

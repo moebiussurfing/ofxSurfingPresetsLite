@@ -9,14 +9,10 @@
 /*
 	TODO:
 
-	fix delete
-		should maintain sorting with xx01.json
-		fix/clean index and indexPre and names workflow
 	add multiple ofParameterGroup/s
 	in the matrix 
 		fix colors on flipping 
 		fix direction
-
 	add rename/custom names presets ?
 */
 
@@ -78,7 +74,7 @@ private:
 
 	void exit() {
 		ofLogNotice("SurfingPresetsLite") << "exit()";
-		//save settings
+		// save settings
 		string s;
 		if (pathGlobal == "")
 			s = pathSettings;
@@ -91,8 +87,8 @@ private:
 		bDoneExit = true;
 	}
 
-private:
-	//public:
+	//private:
+public:
 	// //TODO: fix
 	// Customize name to avoid window names colliding
 	// with other preset manager instances
@@ -120,13 +116,9 @@ public:
 	ofParameter<void> vRandom { "Random" };
 
 	ofParameter<int> index { "Index", -1, -1, -1 };
-	//ofParameter<string> indexName { "Name", "NONE" };//TODO
 
 	ofParameter<bool> bCycled { "Cycled", true };
 	ofParameter<int> numPresetsForPopulating { "Num presets", 9, 1, 32 }; // max presets but only for populating functions!
-
-private:
-	int index_PRE = -2; // pre
 
 public:
 	ofParameter<bool> bGui { "PRESETS", true };
@@ -134,7 +126,9 @@ public:
 	ofParameter<bool> bGuiClicker { "UI CLICKER", false };
 	ofParameter<bool> bGuiFloating { "Floating Window", true };
 	ofParameter<bool> bGuiExpand { "Expand", false };
-	//ofParameter<bool> bGuiClickerMini { "Mini Clicker", false };
+
+private:
+	int index_PRE = -2; // pre
 
 public:
 	void setToggleGuiVisible() { bGui = !bGui; }
@@ -156,15 +150,17 @@ protected:
 	ofParameter<void> vScanKit { "Scan" };
 	ofParameter<void> vClearKit { "Clear Kit" };
 	ofParameter<void> vPopulateKit { "Populate" };
-	ofParameter<void> vPopulateRandomKit { "Random Populate" };
+	ofParameter<void> vPopulateRandomKit { "Populate Random" };
 
 	ofParameter<bool> bAutoSave { "AutoSave", true }; // edit mode
 	ofParameter<bool> bKeys { "Keys", true };
 	ofParameter<bool> bHelp { "Help", true };
 
-	//ofParameter<void> vRename { "Rename" }; //TODO
-
 	vector<char> keyCommandsChars;
+
+	//ofParameter<string> indexName { "Name", "NONE" };//TODO
+	//ofParameter<bool> bGuiClickerMini { "Mini Clicker", false };
+	//ofParameter<void> vRename { "Rename" }; //TODO
 
 private:
 	void setup() {
@@ -178,11 +174,11 @@ private:
 	}
 
 	virtual void refreshGui() {
-		ofLogNotice("SurfingPresetsLite") << "refreshGui() Empty";
+		ofLogNotice("SurfingPresetsLite") << "refreshGui() empty";
 	}
 
 	virtual void setupParametersExtra() {
-		ofLogNotice("SurfingPresetsLite") << "setupParametersExtra()  Empty";
+		ofLogNotice("SurfingPresetsLite") << "setupParametersExtra() empty";
 	}
 
 	virtual void setupParameters() {
@@ -210,8 +206,7 @@ private:
 
 		paramsAdvanced.add(bCycled);
 		paramsAdvanced.add(numPresetsForPopulating);
-
-		paramsInternal.add(bGui); //only for serializing settings. could be hidden of the ui
+		paramsInternal.add(bGui); // only for serializing settings. could be hidden of the ui
 		paramsAdvanced.add(paramsInternal);
 
 		parameters.add(bGuiParams);
@@ -219,7 +214,6 @@ private:
 		parameters.add(paramsManager);
 		parameters.add(paramsKit);
 		parameters.add(paramsAdvanced);
-
 		parameters.add(bHelp);
 		parameters.add(bKeys);
 
@@ -237,7 +231,7 @@ private:
 	}
 
 	virtual void setupGui() {
-		ofLogNotice("SurfingPresetsLite") << "setupGui() Empty";
+		ofLogNotice("SurfingPresetsLite") << "setupGui() empty";
 	}
 
 	void refreshIndexRanges() {
@@ -253,7 +247,7 @@ private:
 			index.set(-1);
 		}
 
-		//clamp index
+		// clamp index
 		if (index < index.getMin())
 			index.set(index.getMin());
 		else if (index > index.getMax())
@@ -330,6 +324,15 @@ private:
 
 		//--
 
+		// Auto populate if there's no preset files found!
+
+		if (getNumPresets() == 0) {
+			ofLogNotice("SurfingPresetsLite") << "No file presets found. Populating a kit of random presets.";
+			doPopulateRandomKit();
+		}
+
+		//--
+
 		bDoneStartup = true;
 	}
 
@@ -353,18 +356,24 @@ public:
 		sHelp = "";
 		sHelp += "PRESETS\nMANAGER\n";
 		sHelp += "\n";
-		sHelp += "g           UI\n";
-		sHelp += "h           Help\n";
-		sHelp += "\n";
-		sHelp += "BACKSPACE   Random\n";
-		sHelp += "+Ctrl       Reset\n";
-		sHelp += "\n";
-		sHelp += "RETURN      New preset\n";
-		sHelp += "+Ctrl       Populate\n";
-		sHelp += "            Random Kit\n";
-		sHelp += "\n";
-		sHelp += "LEFT/RIGHT  Browse\n";
-		sHelp += "UP/DOWN\n";
+		if (bKeys) {
+			sHelp += "KEYS\n";
+			sHelp += "\n";
+			sHelp += "g           UI\n";
+			sHelp += "h           Help\n";
+			sHelp += "\n";
+			sHelp += "BACKSPACE   Random\n";
+			sHelp += "+Ctrl       Reset\n";
+			sHelp += "\n";
+			sHelp += "RETURN      New preset\n";
+			sHelp += "+Ctrl       Populate\n";
+			sHelp += "            Random Kit\n";
+			sHelp += "\n";
+			sHelp += "LEFT/RIGHT  Browse\n";
+			sHelp += "UP/DOWN\n";
+		} else {
+			sHelp += "KEYS DISABLED\n";
+		}
 		sHelp += "\n";
 		sHelp += "Preset\n";
 		sHelp += ofToString(getPresetIndex()) + "/" + ofToString(getPresetIndexLast()) + "\n";
@@ -382,7 +391,9 @@ public:
 		sHelp += "\n";
 		sHelp += "Files:\n";
 		if (dir.size() > 0) sHelp += ofToString(getListFiles()) + "\n";
-		sHelp += "F5          Scan\n";
+		if (bKeys) {
+			sHelp += "F5          Scan\n";
+		}
 	}
 
 	virtual void drawHelp() {
@@ -395,9 +406,9 @@ public:
 
 private:
 	void doSave(bool bRefreshFiles = true) {
-		if (getNumFiles() == 0) fileBaseName = "00"; //prepare name for first preset
+		if (getNumFiles() == 0) fileBaseName = "00"; // prepare name for first preset
 
-		// note that saves the previously settled file name when picking the index!
+		// Note that saves the previously settled file name when picking the index!
 		ofLogNotice("SurfingPresetsLite") << "doSave(" << bRefreshFiles << "): " << fileBaseName;
 
 		// Save preset
@@ -448,8 +459,8 @@ public:
 private:
 	//TODO: allow more than one group..
 	void addGroup(ofParameterGroup & group) {
-		// make a pointer, bc maybe that = no works well..
 
+		//TODO: make a pointer, bc maybe that = no works well..
 		auto ptype = group.type();
 		bool isGroup = ptype == typeid(ofParameterGroup).name();
 		if (isGroup) {
@@ -467,7 +478,7 @@ private:
 	}
 
 public:
-	void setPathGlobal(const string &p) {
+	void setPathGlobal(const string & p) {
 		pathGlobal = p;
 		ofLogNotice("SurfingPresetsLite") << "setPathGlobal(): " << pathGlobal;
 	}
@@ -557,7 +568,6 @@ private:
 		}
 
 		else if (name == vSave.getName()) {
-
 			// filename is already named and ready to be used here!
 			doSave(false);
 		}
@@ -713,6 +723,7 @@ private:
 
 public:
 	ofParameterGroup parameters { "PRESETS MANAGER" };
+
 protected:
 	ofParameterGroup paramsPreset { "Preset" };
 	ofParameterGroup paramsBrowse { "Browse" };
@@ -751,13 +762,12 @@ public:
 	string getKitPath() const {
 		string path;
 		if (pathGlobal != "")
-			path = pathGlobal + "\\" + kitName ;
+			path = pathGlobal + "\\" + kitName;
 		else
 			path = kitName;
 		return path;
 	}
-
-	int getNumPresets() const{
+	int getNumPresets() const {
 		return index.getMax() + 1;
 	}
 	int getPresetIndexLast() const {
@@ -780,11 +790,11 @@ protected:
 		ofLogNotice("SurfingPresetsLite") << "doReorganizeKitFiles() Found " << dir.size() << " files.";
 
 		for (int i = 0; i < dir.size(); i++) {
-			string n = dir[i].getBaseName(); //current name
-			string n_ = string((i < 10) ? "0" : "") + ofToString(i); //expected name
+			string n = dir[i].getBaseName(); // current name
+			string n_ = string((i < 10) ? "0" : "") + ofToString(i); // expected name
 			if (n_ != n) {
-				string pf;//from
-				string pt;//to
+				string pf; //from
+				string pt; //to
 				if (pathGlobal != "") {
 					pf = pathGlobal + "\\" + kitName + "\\" + n + ".json";
 					pt = pathGlobal + "\\" + kitName + "\\" + n_ + ".json";
@@ -813,7 +823,7 @@ protected:
 		ofLogNotice("SurfingPresetsLite") << "doRefreshKitFiles(): " << kitName;
 
 		dir.listDir(getKitPath());
-		
+
 		dir.sort();
 
 		bool bEmpty = (dir.size() == 0);
@@ -843,8 +853,8 @@ protected:
 			ofLogNotice("SurfingPresetsLite") << "doListFiles(): " << f.getAbsolutePath();
 		}
 	}
-	string getListFiles() const{
-		ofLogNotice("SurfingPresetsLite") << "getListFiles()"; 
+	string getListFiles() const {
+		ofLogNotice("SurfingPresetsLite") << "getListFiles()";
 
 		string l;
 		size_t i = 0;
@@ -876,10 +886,10 @@ protected:
 			doRefreshKitFiles();
 #if 1
 			//workflow
-			if (bSetIndexToLast) //load last
+			if (bSetIndexToLast) // load last
 				index.set(index.getMax());
-			else //load current
-				doLoad(index); //refresh selected
+			else // load current
+				doLoad(index); // refresh current selected
 #endif
 			ofLogNotice("SurfingPresetsLite") << "Done delete";
 		} else {
@@ -895,9 +905,9 @@ protected:
 
 		string n;
 		if (dir.size() == 0) {
-			n = "00"; //at first
+			n = "00"; // at first
 		} else {
-			//at last
+			// at last
 			int sz = dir.size();
 			n = string((sz < 10) ? "0" : "") + ofToString(sz);
 		}
@@ -926,13 +936,19 @@ protected:
 		}
 	}
 
-	void doPopulateRandomKit(int amount) { //pass -1 to overwrite/use the same amount of presets
+	void doPopulateRandomKit() {
+		ofLogNotice("SurfingPresetsLite") << "doPopulateRandomKit() " << numPresetsForPopulating;
+
+		doPopulateRandomKit(numPresetsForPopulating);
+	}
+
+	void doPopulateRandomKit(int amount) { // pass -1 to overwrite/use the same amount of presets.
 		ofLogNotice("SurfingPresetsLite") << "doPopulateRandomKit() " << amount;
 
 		doPopulateKit(amount, true);
 	}
 
-	void doPopulateKit(int amount, bool bRandom = false) { //pass -1 to overwrite/use the same amount of presets
+	void doPopulateKit(int amount, bool bRandom = false) { // pass -1 to overwrite/use the same amount of presets.
 		ofLogNotice("SurfingPresetsLite") << "doPopulateKit() " << amount;
 
 		doClearKit(false);
@@ -959,7 +975,7 @@ protected:
 		if (!bKeys) return;
 
 		const int & key = eventArgs.key;
-		ofLogVerbose("SurfingPresetsLite") << "keyPressed: " << (char)key /*<< " [" << key << "]"*/;
+		ofLogVerbose("SurfingPresetsLite") << "keyPressed: " << (char)key;
 
 		// Modifiers
 		bool mod_COMMAND = eventArgs.hasModifier(OF_KEY_COMMAND);
@@ -997,7 +1013,7 @@ protected:
 			doNewPreset();
 
 		else if (key == OF_KEY_RETURN && bMod_CONTROL)
-			doPopulateRandomKit(numPresetsForPopulating);
+			doPopulateRandomKit();
 
 		else {
 			//TODO: not working
@@ -1014,6 +1030,7 @@ protected:
 
 		if (key == 'g')
 			setToggleGuiVisible();
+
 		else if (key == 'G')
 			bGuiClicker = !bGuiClicker;
 	}
@@ -1047,7 +1064,7 @@ protected:
 		ofRemoveListener(ofEvents().keyReleased, this, &SurfingPresetsLite::keyReleased);
 	}
 
-	// easy callback to know when the preset index/selector changed from the parent class
+	// Easy callback to know when the preset index/selector changed from the parent class
 private:
 	bool bIsChangedIndex = false;
 
@@ -1169,7 +1186,7 @@ private:
 				ofLogNotice("SurfingPresetsLite") << pr.getName() << " = " << pr.get();
 			}
 
-#if 0 //disable to avoid both color same \
+#if 0 // Disable to avoid both color same.
 	// colors
 			else if (p.type() == typeid(ofParameter<ofColor>).name()) {
 				ofParameter<ofColor> pr = p.cast<ofColor>();
@@ -1197,22 +1214,8 @@ private:
 
 	//--
 
-	/*
-	* Example:
-	* Two ways for setting this path:
-	// data\TEXT\Presets\xx.json
-	//
-	// 1.
-	//presetsManager.setPathGlobal("TEXT");//parent folder
-	//presetsManager.setKitName("Presets");//presets folder
-	//
-	// 2.
-	presetsManager.setKitName("TEXT\\Presets");//you can call only this too!
-	*/
-
-	//--
-
 	//TODO:
+	// An improved randomizer. center value + power %
 	/*
     enum ResetPramsType
     {

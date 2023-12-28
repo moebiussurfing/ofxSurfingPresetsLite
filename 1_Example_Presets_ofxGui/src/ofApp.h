@@ -10,6 +10,7 @@ public:
 	void setup();
 	void draw();
 
-	SurfingPresetsLiteOfxGui presetsManager;
 	SurfingSceneTesters scene;
+
+	SurfingPresetsLiteOfxGui presetsManager;
 };
