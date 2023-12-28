@@ -5,9 +5,9 @@ A simple class to handle an `ofParameterGroup` presets with some helpers to rand
 This class is based on and separated from [ofxSurfingHelpers](https://github.com/moebiussurfing/ofxSurfingHelpers).  
 
 ## Screenshots
-#### 1_Example_Presets_ofxGui
+### 1_Example_Presets_ofxGui
 ![](1_Example_Presets_ofxGui/Capture.PNG)
-#### 2_Example_Presets_ImGui
+### 2_Example_Presets_ImGui
 ![](2_Example_Presets_ImGui/Capture.PNG)
 
 ## Required
@@ -17,7 +17,7 @@ This class is based on and separated from [ofxSurfingHelpers](https://github.com
 #### For Example 2
 - [ofxSurfingImGui](https://github.com/moebiussurfing/ofxSurfingImGui/tree/develop)
 
-#### TODO
+### TODO
 - Add randomizer for nested groups.
 - Add multiple independent groups.
 - Add multiple Kits managment.
