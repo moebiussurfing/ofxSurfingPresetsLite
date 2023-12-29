@@ -32,7 +32,7 @@ public:
 	void setUiPtr(ofxSurfingGui * _ui) {
 		ui = _ui;
 
-		setupParametersExtra();
+		//setupParametersExtra();
 	}
 
 	void setupParameters() override {
