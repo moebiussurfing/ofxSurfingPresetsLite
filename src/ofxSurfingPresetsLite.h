@@ -147,9 +147,9 @@ protected:
 	ofParameter<void> vSave { "Save" };
 	ofParameter<void> vLoad { "Load" };
 
-	ofParameter<void> vScanKit { "Scan" };
+	ofParameter<void> vScanKit { "Scan Files" };
 	ofParameter<void> vClearKit { "Clear Kit" };
-	ofParameter<void> vPopulateKit { "Populate" };
+	ofParameter<void> vPopulateKit { "Populate Current" };
 	ofParameter<void> vPopulateRandomKit { "Populate Random" };
 
 	ofParameter<bool> bAutoSave { "AutoSave", true }; // edit mode
@@ -370,7 +370,9 @@ public:
 			sHelp += "            Random Kit\n";
 			sHelp += "\n";
 			sHelp += "LEFT/RIGHT  Browse\n";
-			sHelp += "UP/DOWN\n";
+#ifdef SURFING__OFX_PRESETS_LITE__USING__IM_GUI
+			sHelp += "UP/DOWN     Row\n";
+#endif
 		} else {
 			sHelp += "KEYS DISABLED\n";
 		}
@@ -407,7 +409,7 @@ public:
 private:
 	void doSave(bool bRefreshFiles = true) {
 		// Here, fileBaseName is/must be already named and ready to be used here!
-			
+
 		if (getNumFiles() == 0) fileBaseName = "00"; // prepare name for first preset
 
 		// Note that saves the previously settled file name when picking the index!
@@ -432,7 +434,7 @@ private:
 			index = index_;
 		}
 
-		if (index < dir.size() && index>=0) {
+		if (index < dir.size() && index >= 0) {
 			fileBaseName = dir[index].getBaseName();
 			doLoad(fileBaseName);
 		} else {
@@ -471,7 +473,7 @@ private:
 
 		name = group.getName();
 
-		setNameUI(name);//rename bGui param
+		setNameUI(name); //rename bGui param
 		parameters.setName(ofToString("PRESETS ") + name);
 
 		pathSettings = name + ofToString("_Presets.json");
@@ -509,8 +511,8 @@ public:
 		else if (i == index.getMin())
 			if (bCycled)
 				i = index.getMax();
-			//else
-				//i = index.getMin();
+		//else
+		//i = index.getMin();
 		index.set(i);
 	}
 
@@ -523,8 +525,8 @@ public:
 		else if (i == index.getMax())
 			if (bCycled)
 				i = index.getMin();
-			//else
-				//i = index.getMax();
+		//else
+		//i = index.getMax();
 		index.set(i);
 	}
 
@@ -811,8 +813,8 @@ protected:
 				ofFile file(pf);
 				if (file.exists()) {
 					file.renameTo(pt);
-				
-				bSomeFileRequiredRename = true;
+
+					bSomeFileRequiredRename = true;
 				}
 			}
 		}
@@ -1003,10 +1005,12 @@ protected:
 			doRefreshKitFiles(); //TODO: fix
 		}
 
+#ifdef SURFING__OFX_PRESETS_LITE__USING__IM_GUI
 		else if (key == OF_KEY_UP)
 			doLoadPreviousRow();
 		else if (key == OF_KEY_DOWN)
 			doLoadNextRow();
+#endif
 
 		else if (key == OF_KEY_BACKSPACE && bMod_CONTROL)
 			doResetParams();

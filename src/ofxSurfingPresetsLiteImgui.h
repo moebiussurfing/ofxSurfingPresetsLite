@@ -14,6 +14,8 @@ TODO
 
 #include "ofxSurfingImGui.h"
 
+#define SURFING__OFX_PRESETS_LITE__USING__IM_GUI
+
 //----
 
 class SurfingPresetsLiteImGui : public SurfingPresetsLite {
