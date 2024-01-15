@@ -7,8 +7,9 @@
 //--
 
 /*
-	TODO:
-
+	TODO: 
+        add auto saver.
+	  avoid exit save.
 	add multiple ofParameterGroup/s
 	in the matrix 
 		fix colors on flipping 
@@ -167,9 +168,7 @@ private:
 		ofLogNotice("SurfingPresetsLite") << "setup()";
 
 		doRefreshKitFiles();
-
 		setupParameters();
-
 		setupGui();
 	}
 
@@ -829,7 +828,6 @@ protected:
 		ofLogNotice("SurfingPresetsLite") << "doRefreshKitFiles(): " << kitName;
 
 		dir.listDir(getKitPath());
-
 		dir.sort();
 
 		bool bEmpty = (dir.size() == 0);
@@ -984,10 +982,10 @@ protected:
 		ofLogVerbose("SurfingPresetsLite") << "keyPressed: " << (char)key;
 
 		// Modifiers
-		bool mod_COMMAND = eventArgs.hasModifier(OF_KEY_COMMAND);
+		//bool mod_COMMAND = eventArgs.hasModifier(OF_KEY_COMMAND);
 		bool mod_CONTROL = eventArgs.hasModifier(OF_KEY_CONTROL);
 		bool mod_ALT = eventArgs.hasModifier(OF_KEY_ALT);
-		bool mod_SHIFT = eventArgs.hasModifier(OF_KEY_SHIFT);
+		//bool mod_SHIFT = eventArgs.hasModifier(OF_KEY_SHIFT);
 
 		if (mod_CONTROL) bMod_CONTROL = true;
 		if (mod_ALT) bMod_ALT = true;
@@ -1051,10 +1049,10 @@ protected:
 		ofLogVerbose("SurfingPresetsLite") << "keyReleased: " << (char)key /*<< " [" << key << "]"*/;
 
 		// Modifiers
-		bool mod_COMMAND = eventArgs.hasModifier(OF_KEY_COMMAND);
+		//bool mod_COMMAND = eventArgs.hasModifier(OF_KEY_COMMAND);
 		bool mod_CONTROL = eventArgs.hasModifier(OF_KEY_CONTROL);
 		bool mod_ALT = eventArgs.hasModifier(OF_KEY_ALT);
-		bool mod_SHIFT = eventArgs.hasModifier(OF_KEY_SHIFT);
+		//bool mod_SHIFT = eventArgs.hasModifier(OF_KEY_SHIFT);
 
 		if (!mod_CONTROL) bMod_CONTROL = false;
 		if (!mod_ALT) bMod_ALT = false;

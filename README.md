@@ -9,12 +9,13 @@ This class is based on and separated from [ofxSurfingHelpers](https://github.com
   - `ofxGui` or `ImGui` (**ofxSurfingImGui**).
   - Could implement other `UI library` extending the `baseClass`: **ofxSurfingPresetsLite.h**.
 - Auto-created **UI controls** for added `ofParameterGroup` params content.
-- Auto-populate a **Kit** of presets if no files are found. (App is opening for the first time).
+- **Persistent** settings as **index** selected, matrix sizes (**ImGui**), and settings.
 - Manager:
+  - Auto-populate a **Kit** of presets if no files are found. (App is opening for the first time).
   - Simple **randomizer** and **reset** preset.
   - **Populate** a Kit of **copies** from selected preset or new randomizations.
-- **Persistent** settings as **index** selected, matrix sizes (**ImGui**), and settings.
-- **Copy** and **Swap** presets on the **matrix clicker**. (**ImGui**)
+  - **Copy** and **Swap** presets on the **matrix 
+clicker**. (**ImGui**)
 
 ## Screenshots
 ### 1_Example_Presets_ofxGui
@@ -37,7 +38,7 @@ This class is based on and separated from [ofxSurfingHelpers](https://github.com
 
 ## TESTED SYSTEMS
 * **Windows 11** / **VS 2022** / **OF 0.12+** @[GitHub master branch](https://github.com/openframeworks/openFrameworks)
-* Should work probably also on `macOs` and `Linux`.
+* Should work probably also on `macOS` and `Linux`.
 
 ## LICENSE
 **MIT License**
