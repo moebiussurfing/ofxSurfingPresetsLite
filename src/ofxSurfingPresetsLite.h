@@ -8,8 +8,11 @@
 
 /*
 	TODO: 
-        add auto saver.
-	  avoid exit save.
+	allow childern subfolder for reset/random 
+		and populators
+    add auto saver when changes.
+		ussing autoSaver?
+		avoid exit save.
 	add multiple ofParameterGroup/s
 	in the matrix 
 		fix colors on flipping 
@@ -95,7 +98,11 @@ public:
 	// with other preset manager instances
 	//--------------------------------------------------------------
 	void setNameUI(string s) {
-		bGui.set(ofToString("PRESETS ") + s, true);
+		string n = "";
+		n += "UI ";
+		n += "PRESETS ";
+		n += s;
+		bGui.set(n, true);
 	}
 
 private:
@@ -208,7 +215,7 @@ private:
 		paramsInternal.add(bGui); // only for serializing settings. could be hidden of the ui
 		paramsAdvanced.add(paramsInternal);
 
-		parameters.add(bGuiParams);
+		//parameters.add(bGuiParams);//exposed also on guiManager
 		parameters.add(paramsBrowse);
 		parameters.add(paramsManager);
 		parameters.add(paramsKit);
@@ -481,13 +488,20 @@ private:
 	}
 
 public:
+	string getName() const{
+		return name;
+	}
+
+	public:
 	void setPathGlobal(const string & p) {
 		pathGlobal = p;
 		ofLogNotice("SurfingPresetsLite") << "setPathGlobal(): " << pathGlobal;
 	}
 
 public:
-	// related to inside pathGlobal. Must call setPathGlobal before this too.
+	// Sub path related to inside pathGlobal.
+	// Must call setPathGlobal before this too.
+	// Useful to handle multiple presets kits!
 	void setKitName(const string & p) {
 		kitName = p;
 		ofLogNotice("SurfingPresetsLite") << "setKitName(): " << kitName;
@@ -1095,7 +1109,7 @@ private:
 
 		//TODO:
 		// this is not recursive inside the nested groups content!
-		// get solution from ImHelpers from addGroup to iterate groups.
+		// get solution from ImHelpers from addGroup to iterate childern sub folders / groups.
 
 		for (int i = 0; i < paramsPreset.size(); i++) {
 			auto & p = paramsPreset[i];
