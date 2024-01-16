@@ -32,8 +32,7 @@ clicker**. (**ImGui**)
 
 ### TODO
 - Add multiple independent groups.
-- Add randomizer for nested groups.
-  - Improved randomizer: center value and power.
+- Improve randomizer: center value and variation power.
 - Add multiple Kits management.
 
 ## TESTED SYSTEMS
