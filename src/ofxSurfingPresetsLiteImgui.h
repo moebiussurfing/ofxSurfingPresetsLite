@@ -204,9 +204,9 @@ public:
 				bool bResponsiveButtonsClicker = true;
 
 				string sTip = "";
-				if (bMod_CONTROL)
+				if (bModKeyControl)
 					sTip = "Copy to...";
-				else if (bMod_ALT)
+				else if (bModKeyAlt)
 					sTip = "Swap between..";
 				else if (bHelp)
 					sTip = "Press Ctrl/Alt\nto copy/swap";
@@ -355,7 +355,7 @@ public:
 	//#if 0
 	//					if (!bOverInputText) {
 	//						ui->Add(vNew, OFX_IM_BUTTON_SMALL, 2);
-	//						if (bMod_CONTROL) {
+	//						if (bModKeyControl) {
 	//							sTip = "Release control\nto rename";
 	//						} else {
 	//							sTip = "Press control\nto create";
@@ -368,7 +368,7 @@ public:
 	//						}}
 	//#else
 						ui->Add(vNew, OFX_IM_BUTTON_SMALL, 2);
-						if (bMod_CONTROL) {
+						if (bModKeyControl) {
 							sTip = "Release control\nto rename";
 						} else {
 							sTip = "Press control\nto create";
