@@ -17,15 +17,16 @@ namespace ofxSurfing {
 // Random simple
 
 //--------------------------------------------------------------
-static inline void doRandomize(ofParameterGroup & paramsGroup, bool bSilent = false) {
+static inline void doRandomize(ofParameterGroup & paramsGroup/*, bool bSilent = false*/) {
 	ofLogNotice("ofxSurfing") << "doRandomizeParamsGroup():" << paramsGroup.getName();
+	bool bSilent = false;
 
 	for (auto ap : paramsGroup) {
 		// Param Group
 		auto pg = std::dynamic_pointer_cast<ofParameterGroup>(ap);
 		if (pg) {
 			// Recurse through contents.
-			doRandomize(*pg, bSilent);
+			doRandomize(*pg/*, bSilent*/);
 			continue;
 		}
 
@@ -101,15 +102,15 @@ static inline void doRandomize(ofParameterGroup & paramsGroup, bool bSilent = fa
 // Reset Simple
 
 //--------------------------------------------------------------
-static inline void doReset(ofParameterGroup & paramsGroup, bool bSilent = false) {//TODO: to min value!
+static inline void doReset(ofParameterGroup & paramsGroup/*, bool bSilent = false*/) {//TODO: to min value!
 	ofLogNotice("ofxSurfing") << "doResetParamsGroup():" << paramsGroup.getName();
-
+	bool bSilent = false;
 	for (auto ap : paramsGroup) {
 		// Param Group
 		auto pg = std::dynamic_pointer_cast<ofParameterGroup>(ap);
 		if (pg) {
 			// Recurse through contents.
-			doReset(*pg, bSilent);
+			doReset(*pg/*, bSilent*/);
 			continue;
 		}
 

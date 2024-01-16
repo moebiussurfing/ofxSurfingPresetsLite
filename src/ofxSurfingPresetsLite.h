@@ -9,16 +9,14 @@
 
 /*
 	TODO: 
-	allow children subfolder for reset/random 
-		and populators
     add auto saver when changes.
-		ussing autoSaver?
+		using autoSaver?
 		avoid exit save.
 	add multiple ofParameterGroup/s
-	in the matrix 
+	in the imgui matrix: 
 		fix colors on flipping 
 		fix direction
-	add rename/custom names presets ?
+	add rename/custom names presets?
 */
 
 //----
