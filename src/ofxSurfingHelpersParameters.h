@@ -8,6 +8,12 @@ namespace ofxSurfing {
 
 // Resets and random engines
 
+/*
+	TODO
+	- bSilent is not full implemented... 
+		not sure how could be useful..
+*/
+
 // Random simple
 
 //--------------------------------------------------------------
@@ -95,7 +101,7 @@ static inline void doRandomize(ofParameterGroup & paramsGroup, bool bSilent = fa
 // Reset Simple
 
 //--------------------------------------------------------------
-static inline void doReset(ofParameterGroup & paramsGroup, bool bSilent = false) {
+static inline void doReset(ofParameterGroup & paramsGroup, bool bSilent = false) {//TODO: to min value!
 	ofLogNotice("ofxSurfing") << "doResetParamsGroup():" << paramsGroup.getName();
 
 	for (auto ap : paramsGroup) {

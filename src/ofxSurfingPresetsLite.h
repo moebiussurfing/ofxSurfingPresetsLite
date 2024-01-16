@@ -282,7 +282,7 @@ private:
 		//workflow
 		//must set some init states to avoid exceptions on reset!
 		ofxSurfing::doResetSetInit(paramsPreset);
-		
+
 		// fix if index is weird or not correlated to dir files!
 		refreshIndexRanges();
 
@@ -474,7 +474,7 @@ public:
 	}
 
 private:
-	//TODO: allow more than one group... 
+	//TODO: allow more than one group...
 	// recursive or multiple addGroup calls?
 	void addGroup(ofParameterGroup & group) {
 
@@ -1012,36 +1012,74 @@ protected:
 		if (bModKeyControl_) bModKeyControl = true;
 		if (bModKeyAlt_) bModKeyAlt = true;
 
-		if (key == OF_KEY_DEL)
+		if (key == OF_KEY_DEL) {
 			doDelete();
+			return;
+		}
 
-		else if (key == OF_KEY_LEFT)
+		if (key == OF_KEY_LEFT) {
 			doLoadPrevious();
-		else if (key == OF_KEY_RIGHT)
-			doLoadNext();
+			return;
+		}
 
-		else if (key == OF_KEY_F5) {
+		if (key == OF_KEY_RIGHT) {
+			doLoadNext();
+			return;
+		}
+
+		if (key == OF_KEY_F5) {
 			doRefreshKitFiles();
-			doRefreshKitFiles(); //TODO: fix
+			doRefreshKitFiles(); //TODO: doubled to fix
+			return;
 		}
 
 #ifdef SURFING__OFX_PRESETS_LITE__USING__IM_GUI
-		else if (key == OF_KEY_UP)
+		if (key == OF_KEY_UP) {
 			doLoadPreviousRow();
-		else if (key == OF_KEY_DOWN)
+			return;
+		}
+
+		if (key == OF_KEY_DOWN) {
 			doLoadNextRow();
+			return;
+		}
 #endif
 
-		else if (key == OF_KEY_BACKSPACE && bModKeyControl)
-			doReset();
-		else if (key == OF_KEY_BACKSPACE && !bModKeyControl)
-			doRandomize();
-
-		else if (key == OF_KEY_RETURN && !bModKeyControl)
+		if (key == OF_KEY_RETURN && !bModKeyControl) {
 			doNewPreset();
+			return;
+		}
 
-		else if (key == OF_KEY_RETURN && bModKeyControl)
+		if (key == OF_KEY_RETURN && bModKeyControl) {
 			doPopulateRandomKit();
+			return;
+		}
+
+		if (key == OF_KEY_BACKSPACE && bModKeyControl) {
+			doResetInit();
+			//doReset();
+			return;
+		}
+
+		if (key == OF_KEY_BACKSPACE && !bModKeyControl) {
+			doRandomize();
+			return;
+		}
+
+		if (key == 'h') {
+			bHelp = !bHelp;
+			return;
+		}
+
+		if (key == 'g') {
+			setToggleGuiVisible();
+			return;
+		}
+
+		if (key == 'G') {
+			bGuiClicker = !bGuiClicker;
+			return;
+		}
 
 		else {
 			//TODO: not working
@@ -1053,14 +1091,6 @@ protected:
 				}
 			}
 		}
-
-		if (key == 'h') bHelp = !bHelp;
-
-		if (key == 'g')
-			setToggleGuiVisible();
-
-		else if (key == 'G')
-			bGuiClicker = !bGuiClicker;
 	}
 
 	//--------------------------------------------------------------
@@ -1072,12 +1102,12 @@ protected:
 
 		// Modifiers
 		//bool bModKeyCommand_ = eventArgs.hasModifier(OF_KEY_COMMAND);
-		bool mod_CONTROL = eventArgs.hasModifier(OF_KEY_CONTROL);
-		bool mod_ALT = eventArgs.hasModifier(OF_KEY_ALT);
+		bool bModControl_ = eventArgs.hasModifier(OF_KEY_CONTROL);
+		bool bModAlt_ = eventArgs.hasModifier(OF_KEY_ALT);
 		//bool bModKeyShift_ = eventArgs.hasModifier(OF_KEY_SHIFT);
 
-		if (!mod_CONTROL) bModKeyControl = false;
-		if (!mod_ALT) bModKeyAlt = false;
+		if (!bModControl_) bModKeyControl = false;
+		if (!bModAlt_) bModKeyAlt = false;
 	}
 
 	//--------------------------------------------------------------
@@ -1105,31 +1135,31 @@ public:
 			return false;
 	}
 
-	//--
-	
+	//----
+
 	//--------------------------------------------------------------
-	void doResetSetInit(bool bSilent = false) {
+	void doResetSetInit() {//set current state as init/default
 		ofLogNotice("SurfingPresetsLite") << "doResetSetInit()";
 
-		ofxSurfing::doResetSetInit(paramsPreset/*, bSilent*/);
+		ofxSurfing::doResetSetInit(paramsPreset);
 	}
-	
+
 	//--------------------------------------------------------------
-	void doResetInit(bool bSilent = false) {
+	void doResetInit() {//resetore init state
 		ofLogNotice("SurfingPresetsLite") << "doResetInit()";
 
-		ofxSurfing::doResetInit(paramsPreset/*, bSilent*/);
+		ofxSurfing::doResetInit(paramsPreset);
 	}
-	
+
 	//--------------------------------------------------------------
-	void doReset(bool bSilent = false) {
+	void doReset() {//resets to each params mins
 		ofLogNotice("SurfingPresetsLite") << "doReset()";
 
-		ofxSurfing::doReset(paramsPreset, bSilent);
+		ofxSurfing::doReset(paramsPreset);
 	}
 
 	//--------------------------------------------------------------
-	void doRandomize(bool bSilent = false) {
+	void doRandomize() {//randomize each params
 		ofLogNotice("SurfingPresetsLite") << "doRandomize()";
 
 		ofxSurfing::doRandomize(paramsPreset);
