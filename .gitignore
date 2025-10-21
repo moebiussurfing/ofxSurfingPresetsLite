@@ -575,3 +575,6 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+1_Example_Presets_ofxGui/1_Example_Presets_ofxGui.code-workspace
+1_Example_Presets_ofxGui/of.entitlements
+1_Example_Presets_ofxGui/bin/data/.gitkeep

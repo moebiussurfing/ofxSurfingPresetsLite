@@ -78,7 +78,7 @@ private:
 	void exit() {
 		ofLogNotice("SurfingPresetsLite") << "exit()";
 		// save settings
-		string s;
+		std::string s;
 		if (pathGlobal == "")
 			s = pathSettings;
 		else
@@ -96,8 +96,8 @@ public:
 	// Customize name to avoid window names colliding
 	// with other preset manager instances
 	//--------------------------------------------------------------
-	void setNameUI(string s) {
-		string n = "";
+	void setNameUI(std::string s) {
+		std::string n = "";
 		n += "UI ";
 		n += "PRESETS ";
 		n += s;
@@ -105,7 +105,7 @@ public:
 	}
 
 private:
-	string pathSettings = "Presets.json";
+	std::string pathSettings = "Presets.json";
 
 	bool bDoneStartup = false;
 	bool bDoneExit = false;
@@ -166,7 +166,7 @@ protected:
 
 	vector<char> keyCommandsChars;
 
-	//ofParameter<string> indexName { "Name", "NONE" };//TODO
+	//ofParameter<std::string> indexName { "Name", "NONE" };//TODO
 	//ofParameter<bool> bGuiClickerMini { "Mini Clicker", false };
 	//ofParameter<void> vRename { "Rename" }; //TODO
 
@@ -268,7 +268,7 @@ private:
 
 		index_PRE = -2;
 
-		string s;
+		std::string s;
 		if (pathGlobal == "")
 			s = pathSettings;
 		else
@@ -359,7 +359,7 @@ private:
 	}
 
 protected:
-	string sHelp = "";
+	std::string sHelp = "";
 	bool bFlagBuildHelp = false;
 
 public:
@@ -453,7 +453,7 @@ private:
 		}
 	}
 
-	void doLoad(string baseName = "") {
+	void doLoad(std::string baseName = "") {
 		if (baseName != "") {
 			if (fileBaseName != baseName)
 				fileBaseName = baseName;
@@ -494,12 +494,12 @@ private:
 	}
 
 public:
-	string getName() const {
+	std::string getName() const {
 		return name;
 	}
 
 public:
-	void setPathGlobal(const string & p) {
+	void setPathGlobal(const std::string & p) {
 		pathGlobal = p;
 		ofLogNotice("SurfingPresetsLite") << "setPathGlobal(): " << pathGlobal;
 	}
@@ -508,13 +508,13 @@ public:
 	// Sub path related to inside pathGlobal.
 	// Must call setPathGlobal before this too.
 	// Useful to handle multiple presets kits!
-	void setKitName(const string & p) {
+	void setKitName(const std::string & p) {
 		kitName = p;
 		ofLogNotice("SurfingPresetsLite") << "setKitName(): " << kitName;
 	}
 
 private:
-	void setFileBaseName(const string & p) {
+	void setFileBaseName(const std::string & p) {
 		fileBaseName = p;
 		ofLogNotice("SurfingPresetsLite") << "setFileBaseName(): " << fileBaseName;
 	}
@@ -569,7 +569,7 @@ public:
 
 private:
 	void Changed(ofAbstractParameter & e) {
-		string name = e.getName();
+		std::string name = e.getName();
 		ofLogNotice("SurfingPresetsLite") << "Changed: " << name << ": " << e;
 
 		bFlagBuildHelp = true;
@@ -709,8 +709,8 @@ private:
 				if (index < fileBaseNames.size() && index_PRE < fileBaseNames.size()) {
 
 					// Rename target to source
-					string nFrom = fileBaseNames[index_PRE];
-					string nTo = fileBaseNames[index];
+					std::string nFrom = fileBaseNames[index_PRE];
+					std::string nTo = fileBaseNames[index];
 					ofFile f;
 
 					if (pathGlobal != "") {
@@ -756,37 +756,37 @@ protected:
 	//ofParameterGroup paramsUI { "UI" };
 
 protected:
-	string name = ""; // only for instance naming.
+	std::string name = ""; // only for instance naming.
 
 private:
-	string kitName = "Kit"; // path to put the preset files. bin/data/Kit/
-	string pathGlobal = ""; // Optional main folder where nested folder goes inside. bin/data/myApp/Kit/
+	std::string kitName = "Kit"; // path to put the preset files. bin/data/Kit/
+	std::string pathGlobal = ""; // Optional main folder where nested folder goes inside. bin/data/myApp/Kit/
 
 	// Files
 protected:
 	ofDirectory dir;
 
-	string filePath;
-	string fileBaseName = "NONE";
-	vector<string> fileBaseNames;
+	std::string filePath;
+	std::string fileBaseName = "NONE";
+	vector<std::string> fileBaseNames;
 
 	//--
 
 public:
-	string getPresetPath() const {
+	std::string getPresetPath() const {
 		//fileBaseName must/should be settled before being here!
 		//fileBaseName will be updated when moving the index around the Kit presets...
-		string path;
+		std::string path;
 		if (pathGlobal != "")
-			path = pathGlobal + "\\" + kitName + "\\" + fileBaseName + ".json";
+			path = ofFilePath::join(ofFilePath::join(pathGlobal, kitName), fileBaseName + ".json");
 		else
-			path = kitName + "\\" + fileBaseName + ".json";
+			path = ofFilePath::join(kitName,fileBaseName + ".json");
 		return path;
 	}
-	string getKitPath() const {
-		string path;
+	std::string getKitPath() const {
+		std::string path;
 		if (pathGlobal != "")
-			path = pathGlobal + "\\" + kitName;
+			path = ofFilePath::join(pathGlobal,kitName);
 		else
 			path = kitName;
 		return path;
@@ -814,17 +814,17 @@ protected:
 		ofLogNotice("SurfingPresetsLite") << "doReorganizeKitFiles() Found " << dir.size() << " files.";
 
 		for (int i = 0; i < dir.size(); i++) {
-			string n = dir[i].getBaseName(); // current name
-			string n_ = string((i < 10) ? "0" : "") + ofToString(i); // expected name
+			std::string n = dir[i].getBaseName(); // current name
+			std::string n_ = std::string((i < 10) ? "0" : "") + ofToString(i); // expected name
 			if (n_ != n) {
-				string pf; //from
-				string pt; //to
+				std::string pf; //from
+				std::string pt; //to
 				if (pathGlobal != "") {
-					pf = pathGlobal + "\\" + kitName + "\\" + n + ".json";
-					pt = pathGlobal + "\\" + kitName + "\\" + n_ + ".json";
+					pf = ofFilePath::join(ofFilePath::join(pathGlobal,kitName),(n + ".json"));
+					pt = ofFilePath::join(ofFilePath::join(pathGlobal,kitName),(n_ + ".json"));
 				} else {
-					pf = kitName + "\\" + n + ".json";
-					pt = kitName + "\\" + n_ + ".json";
+					pf = ofFilePath::join(kitName, (n + ".json"));
+					pt = ofFilePath::join(kitName, (n_ + ".json"));
 				}
 
 				ofLogNotice("SurfingPresetsLite") << "Rename file #" << i;
@@ -877,10 +877,10 @@ protected:
 			ofLogNotice("SurfingPresetsLite") << "doListFiles(): " << f.getAbsolutePath();
 		}
 	}
-	string getListFiles() const {
+	std::string getListFiles() const {
 		ofLogNotice("SurfingPresetsLite") << "getListFiles()";
 
-		string l;
+		std::string l;
 		size_t i = 0;
 		for (auto f : dir) {
 			l += f.path();
@@ -901,7 +901,7 @@ protected:
 
 		ofLogNotice("SurfingPresetsLite") << "doDelete() Filename: " << fileBaseName;
 
-		string p = getPresetPath();
+		std::string p = getPresetPath();
 		ofLogNotice("SurfingPresetsLite") << "doDelete() Look for: " << p;
 		bool b = ofFile::removeFile(p);
 
@@ -927,13 +927,13 @@ protected:
 	void doNewPreset() {
 		ofLogNotice("SurfingPresetsLite") << "doNewPreset()";
 
-		string n;
+		std::string n;
 		if (dir.size() == 0) {
 			n = "00"; // at first
 		} else {
 			// at last
 			int sz = dir.size();
-			n = string((sz < 10) ? "0" : "") + ofToString(sz);
+			n = std::string((sz < 10) ? "0" : "") + ofToString(sz);
 		}
 		setFileBaseName(n);
 
