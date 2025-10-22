@@ -28,7 +28,13 @@ public:
 
 		refreshGui();
 	}
-
+	
+//	//TODO useful to collapse ui sub panels
+//	ofxGuiGroup & getGroupGui(){
+//		return guiManager.guis[2]->getGroup(paramsPreset.getName();
+//	}
+	//TODO: collapse all presets folders
+	
 	void refreshGui() override {
 		ofLogNotice("SurfingPresetsLite") << "refreshGui()";
 

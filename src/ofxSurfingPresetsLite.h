@@ -470,7 +470,7 @@ public:
 	void setup(ofParameterGroup & group) {
 		addGroup(group);
 	}
-
+	
 private:
 	//TODO: allow more than one group...
 	// recursive or multiple addGroup calls?
