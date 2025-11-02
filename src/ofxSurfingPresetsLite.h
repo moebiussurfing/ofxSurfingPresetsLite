@@ -486,7 +486,8 @@ private:
 		name = group.getName();
 
 		setNameUI(name); //rename bGui param
-		parameters.setName(ofToString("PRESETS ") + name);
+		//parameters.setName(ofToString("PRESETS ") + name);
+		parameters.setName(ofToString("PRESET ") + name);
 
 		pathSettings = name + ofToString("_Presets.json");
 
