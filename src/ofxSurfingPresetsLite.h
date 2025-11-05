@@ -20,7 +20,7 @@
 		set default /kit/
 		populate
 
-	simplify help info names/path
+	smooth params ?
 
 	--
 
