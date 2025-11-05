@@ -11,14 +11,24 @@
 /*
 	TODO:
 
+	FIX init start when no settings.
+		set default path ex: /bin/data/kit/
+		improve default workflow
+			kit path empty
+			set default /kit/
+			populate
+
 	add new index and from/to copy preset
+
+	FIX some crashes
+
+	simplify path and refresh
+
+	FIX global path for settings
 
 	FIX clean not required pathSettings, pathGlobal..
 
-	improve default workflow
-		kit path empty
-		set default /kit/
-		populate
+	FIX key triggers
 
 	smooth params ?
 
