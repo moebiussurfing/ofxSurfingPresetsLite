@@ -2,13 +2,28 @@
 #pragma once
 #include "ofMain.h"
 
+#include "SurfingFilesManager.h"
 #include "ofxSurfingHelpersLite.h"
 #include "ofxSurfingHelpersParameters.h"
 
 //--
 
 /*
-	TODO: 
+	TODO:
+
+	add new index and from/to copy preset
+
+	FIX clean not required pathSettings, pathGlobal..
+
+	improve default workflow
+		kit path empty
+		set default /kit/
+		populate
+
+	simplify help info names/path
+
+	--
+
     add auto saver when changes.
 		using autoSaver?
 		avoid exit save.
@@ -17,6 +32,8 @@
 		fix colors on flipping 
 		fix direction
 	add rename/custom names presets?
+
+	re populate misc unsorted files with correlative names 01-02-etc
 */
 
 //----
@@ -46,6 +63,7 @@ public:
 
 protected:
 	void addListeners() {
+		ofLogNotice("SurfingPresetsLite") << "addListeners()";
 
 		ofAddListener(parameters.parameterChangedE(), this, &SurfingPresetsLite::Changed);
 		ofAddListener(ofEvents().update, this, &SurfingPresetsLite::update);
@@ -57,6 +75,7 @@ protected:
 	}
 
 	void removeListeners() {
+		ofLogNotice("SurfingPresetsLite") << "removeListeners()";
 
 		ofRemoveListener(parameters.parameterChangedE(), this, &SurfingPresetsLite::Changed);
 		ofRemoveListener(ofEvents().update, this, &SurfingPresetsLite::update);
@@ -66,23 +85,25 @@ protected:
 	}
 
 	virtual void destructUI() {
-		ofLogNotice("SurfingPresetsLite") << "destructUI() empty";
+		ofLogNotice("SurfingPresetsLite") << "destructUI() empty"; // To be filled by derived classes..
 	}
 
 private:
 	void exit(ofEventArgs & args) {
 		ofLogNotice("SurfingPresetsLite") << "exit(args)";
+
 		exit();
 	}
 
 	void exit() {
 		ofLogNotice("SurfingPresetsLite") << "exit()";
+
 		// save settings
 		std::string s;
 		if (pathGlobal == "")
 			s = pathSettings;
 		else
-			s = pathGlobal + "\\" + pathSettings;
+			s = ofFilePath::join(pathGlobal, pathSettings);
 		ofxSurfing::saveGroup(parameters, s);
 
 		if (bAutoSave) doSave(false);
@@ -90,13 +111,13 @@ private:
 		bDoneExit = true;
 	}
 
-	//private:
 public:
 	// //TODO: fix
 	// Customize name to avoid window names colliding
 	// with other preset manager instances
-	//--------------------------------------------------------------
 	void setNameUI(std::string s) {
+		ofLogNotice("SurfingPresetsLite") << "setNameUI(): " << s;
+
 		std::string n = "";
 		n += "UI ";
 		n += "PRESETS ";
@@ -126,7 +147,7 @@ public:
 	ofParameter<int> index { "Index", -1, -1, -1 };
 
 	ofParameter<bool> bCycled { "Cycled", true };
-	ofParameter<int> numPresetsForPopulating { "Num presets", 9, 1, 32 }; // max presets but only for populating functions!
+	ofParameter<int> numPresetsForPopulating { "Num presets", 10, 2, 32 }; // max presets but only for populating functions!
 
 public:
 	ofParameter<bool> bGui { "PRESETS", true };
@@ -164,34 +185,63 @@ protected:
 	ofParameter<bool> bKeys { "Keys", true };
 	ofParameter<bool> bHelp { "Help", true };
 
-	vector<char> keyCommandsChars;
+	vector<char> keyCommandsChars; // available keys to listen on key press
 
-	//ofParameter<std::string> indexName { "Name", "NONE" };//TODO
-	//ofParameter<bool> bGuiClickerMini { "Mini Clicker", false };
-	//ofParameter<void> vRename { "Rename" }; //TODO
+private:
+	SurfingFilesManager filesManager;
+	ofParameter<std::string> path_Kit;
 
 private:
 	void setup() {
 		ofLogNotice("SurfingPresetsLite") << "setup()";
 
-		doRefreshKitFiles();
 		setupParameters();
+		doRefreshKitFiles();
 		setupGui();
 	}
 
 	virtual void refreshGui() {
-		ofLogNotice("SurfingPresetsLite") << "refreshGui() empty";
+		ofLogNotice("SurfingPresetsLite") << "refreshGui() empty"; // To be filled by derived classes..
 	}
 
 	virtual void setupParametersExtra() {
-		ofLogNotice("SurfingPresetsLite") << "setupParametersExtra() empty";
+		ofLogNotice("SurfingPresetsLite") << "setupParametersExtra() empty"; // To be filled by derived classes..
 	}
+
+	//--
+
+	void setupFilesManager() {
+		ofLogNotice("SurfingPresetsLite") << "setupFilesManager()";
+
+		filesManager.setName("Kit_Path");
+		filesManager.setup(true); // to hide export trigger in case you dont need it
+		if (filesManager.getPathFolder() == "")
+			filesManager.setPathFolder(ofToDataPath("\\Kit2\\")); //TODO:
+		path_Kit.set(filesManager.getPathFolder());
+		path_Kit.setSerializable(false); // hide from serialization bc we use surfingFilesManager to store the path
+		paramsKit.add(filesManager.params);
+		setupFilesManagerCallbacks();
+	}
+
+	void setupFilesManagerCallbacks() {
+		ofLogNotice("SurfingPresetsLite") << "setupFilesManagerCallbacks()";
+
+		// Custom callbacks for files manager
+		// Notify ofApp when a folder is selected in the manager
+		filesManager.setFolderSelectedCallback([this](const std::string & folder) {
+			ofLogNotice("SurfingPresetsLite") << "Callback (SurfingFilesManager) Folder selected: " << folder;
+
+			// store selected folder
+			path_Kit.set(filesManager.getPathFolder());
+
+			doRefreshKitFiles();
+		});
+	}
+
+	//--
 
 	virtual void setupParameters() {
 		ofLogNotice("SurfingPresetsLite") << "setupParameters()";
-
-		//indexName.setSerializable(false);
-		paramsKit.setSerializable(false);
 
 		paramsBrowse.add(index);
 		paramsBrowse.add(vNext);
@@ -211,12 +261,15 @@ private:
 		paramsKit.add(vClearKit);
 		paramsKit.add(vScanKit);
 
+		// Setup files manager
+		setupFilesManager();
+
 		paramsAdvanced.add(bCycled);
 		paramsAdvanced.add(numPresetsForPopulating);
 		paramsInternal.add(bGui); // only for serializing settings. could be hidden of the ui
 		paramsAdvanced.add(paramsInternal);
 
-		//parameters.add(bGuiParams);//exposed also on guiManager
+		//parameters.add(bGuiParams); // exposed also on guiManager
 		parameters.add(paramsBrowse);
 		parameters.add(paramsManager);
 		parameters.add(paramsKit);
@@ -224,20 +277,10 @@ private:
 		parameters.add(bHelp);
 		parameters.add(bKeys);
 
-		//not usable for ofxGui besides ImGui
-		//paramsInternal.add(bGuiClicker);
-		//paramsInternal.add(numColumnsPerRow);
-		//paramsInternal.add(bGuiFloating);
-		//paramsInternal.add(bGuiExpand);
-		//paramsUI.add(bGuiClicker);
-		//params.add(paramsUI);
-		//paramsBrowse.add(indexName);
-		//paramsManager.add(vRename);
-
 		setupParametersExtra();
 	}
 
-	virtual void setupGui() {
+	virtual void setupGui() { // To be filled by derived classes..
 		ofLogNotice("SurfingPresetsLite") << "setupGui() empty";
 	}
 
@@ -254,7 +297,7 @@ private:
 			index.set(-1);
 		}
 
-		// clamp index
+		// Clamp index
 		if (index < index.getMin())
 			index.set(index.getMin());
 		else if (index > index.getMax())
@@ -268,17 +311,16 @@ private:
 
 		index_PRE = -2;
 
+		// load settings
 		std::string s;
 		if (pathGlobal == "")
 			s = pathSettings;
 		else
-			s = pathGlobal + "\\" + pathSettings;
-
-		// load settings
+			s = ofFilePath::join(pathGlobal, pathSettings);
 		ofxSurfing::loadGroup(parameters, s);
 
-		//workflow
-		//must set some init states to avoid exceptions on reset!
+		// workflow
+		// must set some init states to avoid exceptions on reset!
 		ofxSurfing::doResetSetInit(paramsPreset);
 
 		// fix if index is weird or not correlated to dir files!
@@ -290,7 +332,6 @@ private:
 		//TODO: fix > 9
 		// define some standard key strokes to trig presets
 		vector<char> pChars = {
-			'0',
 			'1',
 			'2',
 			'3',
@@ -300,6 +341,7 @@ private:
 			'7',
 			'8',
 			'9',
+			'0',
 			'q',
 			'w',
 			'e',
@@ -327,6 +369,8 @@ private:
 			'n',
 			'm'
 		};
+		//TODO: could be improved bc sometimes we could load a folder with more files..
+		//TODO: run on refresh kit instead!
 		numPresetsForPopulating = ofClamp(numPresetsForPopulating.get(), 0, numPresetsForPopulating.getMax());
 		keyCommandsChars.clear();
 		for (size_t i = 0; i < numPresetsForPopulating; i++) {
@@ -380,7 +424,7 @@ public:
 			sHelp += "+Ctrl       Populate\n";
 			sHelp += "            Random Kit\n";
 			sHelp += "\n";
-			sHelp += "LEFT/RIGHT  Browse\n";
+			sHelp += "< >         Browse\n";
 #ifdef SURFING__OFX_PRESETS_LITE__USING__IM_GUI
 			sHelp += "UP/DOWN     Row\n";
 #endif
@@ -391,18 +435,15 @@ public:
 		sHelp += "Preset\n";
 		sHelp += ofToString(getPresetIndex()) + "/" + ofToString(getPresetIndexLast()) + "\n";
 		sHelp += "\n";
-		sHelp += "File:\n";
-		if (index < dir.size()) sHelp += dir[index].path() + "\n";
+		sHelp += "Kit Path: \n";
+		sHelp += path_Kit.get() + "\n";
 		sHelp += "\n";
-		if (pathGlobal != "") {
-			sHelp += "Path Global:\n";
-			sHelp += pathGlobal + "\n";
-			sHelp += "\n";
-		}
-		sHelp += "Kit Name:\n";
-		sHelp += kitName + "\n";
+		sHelp += "Kit         ";
+		sHelp += ofFilePath::getFileName(ofFilePath::removeTrailingSlash(path_Kit.get())) + "\n";
+		sHelp += "File        ";
+		if (index < dir.size()) sHelp += ofFilePath::getFileName(dir[index].path()) + "\n";
 		sHelp += "\n";
-		sHelp += "Files:\n";
+		sHelp += "Files: \n";
 		if (dir.size() > 0) sHelp += ofToString(getListFiles()) + "\n";
 		if (bKeys) {
 			sHelp += "F5          Scan\n";
@@ -419,6 +460,8 @@ public:
 
 private:
 	void doSave(bool bRefreshFiles = true) {
+		ofLogNotice("SurfingPresetsLite") << "doSave()";
+
 		// Here, fileBaseName is/must be already named and ready to be used here!
 
 		if (getNumFiles() == 0) fileBaseName = "00"; // prepare name for first preset
@@ -454,6 +497,8 @@ private:
 	}
 
 	void doLoad(std::string baseName = "") {
+		ofLogNotice("SurfingPresetsLite") << "doLoad(" << baseName << ")";
+
 		if (baseName != "") {
 			if (fileBaseName != baseName)
 				fileBaseName = baseName;
@@ -468,13 +513,15 @@ private:
 
 public:
 	void setup(ofParameterGroup & group) {
+		ofLogNotice("SurfingPresetsLite") << "setup(): " << group.getName();
 		addGroup(group);
 	}
-	
+
 private:
 	//TODO: allow more than one group...
 	// recursive or multiple addGroup calls?
 	void addGroup(ofParameterGroup & group) {
+		ofLogNotice("SurfingPresetsLite") << "addGroup(): " << group.getName();
 
 		//TODO: make a pointer, bc maybe that `=` not work well..
 		auto ptype = group.type();
@@ -505,15 +552,6 @@ public:
 		ofLogNotice("SurfingPresetsLite") << "setPathGlobal(): " << pathGlobal;
 	}
 
-public:
-	// Sub path related to inside pathGlobal.
-	// Must call setPathGlobal before this too.
-	// Useful to handle multiple presets kits!
-	void setKitName(const std::string & p) {
-		kitName = p;
-		ofLogNotice("SurfingPresetsLite") << "setKitName(): " << kitName;
-	}
-
 private:
 	void setFileBaseName(const std::string & p) {
 		fileBaseName = p;
@@ -523,6 +561,7 @@ private:
 public:
 	void doLoadPrevious() {
 		ofLogNotice("SurfingPresetsLite") << "doLoadPrevious()";
+
 		if (index.getMax() == -1) return;
 		int i = index;
 
@@ -538,6 +577,7 @@ public:
 
 	void doLoadNext() {
 		ofLogNotice("SurfingPresetsLite") << "doLoadNext()";
+
 		if (index.getMax() == -1) return;
 		int i = index;
 		if (i < index.getMax())
@@ -608,7 +648,7 @@ private:
 		}
 
 		else if (name == vClearKit.getName()) {
-			doClearKit(); //autocreates a new preset
+			doClearKit(); // autocreates a new preset
 		}
 
 		else if (name == vPopulateKit.getName()) {
@@ -635,7 +675,7 @@ private:
 	void doProcessIndexCallback() {
 		if (dir.size() == 0) return;
 
-		// Changed?
+		// Changed ?
 		if (index != index_PRE) {
 			ofLogNotice("SurfingPresetsLite") << ofToString(index_PRE) << " > " << ofToString(index);
 			bIsChangedIndex = true;
@@ -651,11 +691,13 @@ private:
 			//--
 
 			// 1. Common load.
+			//
 			// Also will save the previous index preset if AutoSave enabled.
 
 			if (!bModKeyControl && !bModKeyAlt) // Ctrl nor Alt not pressed.
 			{
 				// 1.1 save if enabled AutoSave
+
 				if (bAutoSave) {
 					if (index_PRE < fileBaseNames.size()) {
 						fileBaseName = fileBaseNames[index_PRE];
@@ -668,6 +710,7 @@ private:
 				//--
 
 				// 1.2 load
+
 				ofLogNotice("SurfingPresetsLite") << index.getName() + ": " << ofToString(index);
 
 				if (index < fileBaseNames.size()) {
@@ -714,13 +757,8 @@ private:
 					std::string nTo = fileBaseNames[index];
 					ofFile f;
 
-					if (pathGlobal != "") {
-						nTo = pathGlobal + "\\" + kitName + "\\" + nTo + ".json";
-						nFrom = pathGlobal + "\\" + kitName + "\\" + nFrom + ".json";
-					} else {
-						nTo = kitName + "\\" + nTo + ".json";
-						nFrom = kitName + "\\" + nFrom + ".json";
-					}
+					nTo = path_Kit.get() + "\\" + nTo + ".json";
+					nFrom = path_Kit.get() + "\\" + nFrom + ".json";
 
 					bool bf = f.open(nTo);
 					bool bt = f.renameTo(nFrom, true, true);
@@ -754,13 +792,13 @@ protected:
 	ofParameterGroup paramsKit { "Kit" };
 	ofParameterGroup paramsAdvanced { "Advanced" };
 	ofParameterGroup paramsInternal { "Internal" };
+
 	//ofParameterGroup paramsUI { "UI" };
 
 protected:
 	std::string name = ""; // only for instance naming.
 
 private:
-	std::string kitName = "Kit"; // path to put the preset files. bin/data/Kit/
 	std::string pathGlobal = ""; // Optional main folder where nested folder goes inside. bin/data/myApp/Kit/
 
 	// Files
@@ -775,21 +813,9 @@ protected:
 
 public:
 	std::string getPresetPath() const {
-		//fileBaseName must/should be settled before being here!
-		//fileBaseName will be updated when moving the index around the Kit presets...
 		std::string path;
-		if (pathGlobal != "")
-			path = ofFilePath::join(ofFilePath::join(pathGlobal, kitName), fileBaseName + ".json");
-		else
-			path = ofFilePath::join(kitName,fileBaseName + ".json");
-		return path;
-	}
-	std::string getKitPath() const {
-		std::string path;
-		if (pathGlobal != "")
-			path = ofFilePath::join(pathGlobal,kitName);
-		else
-			path = kitName;
+		path = ofFilePath::join(path_Kit.get(), fileBaseName + ".json");
+
 		return path;
 	}
 	int getNumPresets() const {
@@ -818,15 +844,10 @@ protected:
 			std::string n = dir[i].getBaseName(); // current name
 			std::string n_ = std::string((i < 10) ? "0" : "") + ofToString(i); // expected name
 			if (n_ != n) {
-				std::string pf; //from
-				std::string pt; //to
-				if (pathGlobal != "") {
-					pf = ofFilePath::join(ofFilePath::join(pathGlobal,kitName),(n + ".json"));
-					pt = ofFilePath::join(ofFilePath::join(pathGlobal,kitName),(n_ + ".json"));
-				} else {
-					pf = ofFilePath::join(kitName, (n + ".json"));
-					pt = ofFilePath::join(kitName, (n_ + ".json"));
-				}
+				std::string pf; // from
+				std::string pt; // to
+				pf = ofFilePath::join(path_Kit.get(), (n + ".json"));
+				pt = ofFilePath::join(path_Kit.get(), (n_ + ".json"));
 
 				ofLogNotice("SurfingPresetsLite") << "Rename file #" << i;
 				ofLogNotice("SurfingPresetsLite") << pf << " > " << pt;
@@ -846,14 +867,14 @@ protected:
 
 	bool doRefreshKitFiles() {
 		// Must call for reading folder, when deleting or creating a new preset.
-		ofLogNotice("SurfingPresetsLite") << "doRefreshKitFiles(): " << kitName;
+		ofLogNotice("SurfingPresetsLite") << "doRefreshKitFiles(): " << path_Kit.get();
 
-		dir.listDir(getKitPath());
+		dir.listDir(path_Kit.get());
 		dir.sort();
 
 		bool bEmpty = (dir.size() == 0);
 		if (bEmpty) {
-			ofLogWarning("SurfingPresetsLite") << "doRefreshKitFiles(): " << getKitPath() << " directory is empty.";
+			ofLogWarning("SurfingPresetsLite") << "doRefreshKitFiles(): " << path_Kit.get() << " directory is empty.";
 		} else {
 			doReorganizeKitFiles();
 		}
@@ -868,7 +889,7 @@ protected:
 
 		refreshIndexRanges();
 
-		// returns true if there's some file/s!
+		// Returns true if there's some file/s!
 		return (!bEmpty);
 	}
 
@@ -884,7 +905,8 @@ protected:
 		std::string l;
 		size_t i = 0;
 		for (auto f : dir) {
-			l += f.path();
+			l += f.getFileName();
+			//l += f.path();
 			if (i == index) l += " *";
 			l += "\n";
 			i++;
@@ -910,7 +932,7 @@ protected:
 			ofLogNotice("SurfingPresetsLite") << "Successfully deleted: " << p;
 			doRefreshKitFiles();
 #if 1
-			//workflow
+			// workflow
 			if (bSetIndexToLast) // load last
 				index.set(index.getMax());
 			else // load current
@@ -940,7 +962,7 @@ protected:
 
 		doSave(true);
 
-		//workflow: select last preset
+		// workflow: select last preset
 		index.set(dir.size() - 1);
 	}
 
@@ -955,7 +977,7 @@ protected:
 
 		doRefreshKitFiles();
 
-		//workflow: create a new preset
+		// workflow: create a new preset
 		if (createOne) {
 			doNewPreset();
 		}
@@ -1003,9 +1025,9 @@ protected:
 		ofLogVerbose("SurfingPresetsLite") << "keyPressed: " << (char)key;
 
 		// Modifiers
-		//bool bModKeyCommand_ = eventArgs.hasModifier(OF_KEY_COMMAND);
 		bool bModKeyControl_ = eventArgs.hasModifier(OF_KEY_CONTROL);
 		bool bModKeyAlt_ = eventArgs.hasModifier(OF_KEY_ALT);
+		//bool bModKeyCommand_ = eventArgs.hasModifier(OF_KEY_COMMAND);
 		//bool bModKeyShift_ = eventArgs.hasModifier(OF_KEY_SHIFT);
 
 		if (bModKeyControl_) bModKeyControl = true;
@@ -1028,7 +1050,7 @@ protected:
 
 		if (key == OF_KEY_F5) {
 			doRefreshKitFiles();
-			doRefreshKitFiles(); //TODO: doubled to fix
+			//doRefreshKitFiles(); //TODO: doubled to fix
 			return;
 		}
 
@@ -1100,10 +1122,8 @@ protected:
 		ofLogVerbose("SurfingPresetsLite") << "keyReleased: " << (char)key /*<< " [" << key << "]"*/;
 
 		// Modifiers
-		//bool bModKeyCommand_ = eventArgs.hasModifier(OF_KEY_COMMAND);
 		bool bModControl_ = eventArgs.hasModifier(OF_KEY_CONTROL);
 		bool bModAlt_ = eventArgs.hasModifier(OF_KEY_ALT);
-		//bool bModKeyShift_ = eventArgs.hasModifier(OF_KEY_SHIFT);
 
 		if (!bModControl_) bModKeyControl = false;
 		if (!bModAlt_) bModKeyAlt = false;
@@ -1111,12 +1131,16 @@ protected:
 
 	//--------------------------------------------------------------
 	void addKeysListeners() {
+		ofLogNotice("SurfingPresetsLite") << "addKeysListeners()";
+
 		ofAddListener(ofEvents().keyPressed, this, &SurfingPresetsLite::keyPressed);
 		ofAddListener(ofEvents().keyReleased, this, &SurfingPresetsLite::keyReleased);
 	}
 
 	//--------------------------------------------------------------
 	void removeKeysListeners() {
+		ofLogNotice("SurfingPresetsLite") << "removeKeysListeners()";
+
 		ofRemoveListener(ofEvents().keyPressed, this, &SurfingPresetsLite::keyPressed);
 		ofRemoveListener(ofEvents().keyReleased, this, &SurfingPresetsLite::keyReleased);
 	}
@@ -1137,28 +1161,28 @@ public:
 	//----
 
 	//--------------------------------------------------------------
-	void doResetSetInit() {//set current state as init/default
+	void doResetSetInit() { // set current state as init/default
 		ofLogNotice("SurfingPresetsLite") << "doResetSetInit()";
 
 		ofxSurfing::doResetSetInit(paramsPreset);
 	}
 
 	//--------------------------------------------------------------
-	void doResetInit() {//resetore init state
+	void doResetInit() { // resetore init state
 		ofLogNotice("SurfingPresetsLite") << "doResetInit()";
 
 		ofxSurfing::doResetInit(paramsPreset);
 	}
 
 	//--------------------------------------------------------------
-	void doReset() {//resets to each params mins
+	void doReset() { // resets to each params mins
 		ofLogNotice("SurfingPresetsLite") << "doReset()";
 
 		ofxSurfing::doReset(paramsPreset);
 	}
 
 	//--------------------------------------------------------------
-	void doRandomize() {//randomize each params
+	void doRandomize() { // andomize each params
 		ofLogNotice("SurfingPresetsLite") << "doRandomize()";
 
 		ofxSurfing::doRandomize(paramsPreset);
