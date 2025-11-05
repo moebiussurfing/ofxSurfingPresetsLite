@@ -1027,8 +1027,6 @@ protected:
 		// Modifiers
 		bool bModKeyControl_ = eventArgs.hasModifier(OF_KEY_CONTROL);
 		bool bModKeyAlt_ = eventArgs.hasModifier(OF_KEY_ALT);
-		//bool bModKeyCommand_ = eventArgs.hasModifier(OF_KEY_COMMAND);
-		//bool bModKeyShift_ = eventArgs.hasModifier(OF_KEY_SHIFT);
 
 		if (bModKeyControl_) bModKeyControl = true;
 		if (bModKeyAlt_) bModKeyAlt = true;
