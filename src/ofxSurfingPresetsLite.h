@@ -11,6 +11,10 @@
 /*
 	TODO:
 
+	allow create folder.
+	select other folder, if has files, load first preset.
+	FIX set reset allowing colors that seems disabled!
+
 	FIX init start when no settings.
 		set default path ex: /bin/data/kit/
 		improve default workflow
@@ -204,6 +208,8 @@ private:
 private:
 	void setup() {
 		ofLogNotice("SurfingPresetsLite") << "setup()";
+
+		ofSetLogLevel("SurfingOfxGuiPanelsManager", OF_LOG_SILENT);
 
 		setupParameters();
 		doRefreshKitFiles();
@@ -448,7 +454,7 @@ public:
 		sHelp += ofToString(getPresetIndex()) + "/" + ofToString(getPresetIndexLast()) + "\n";
 		sHelp += "\n";
 		sHelp += "Kit Path: \n";
-		sHelp += path_Kit.get() + "\n";
+		sHelp += splitPathIntoLines(path_Kit.get(), 3) + "\n";
 		sHelp += "\n";
 		sHelp += "Kit         ";
 		sHelp += ofFilePath::getFileName(ofFilePath::removeTrailingSlash(path_Kit.get())) + "\n";
@@ -471,6 +477,39 @@ public:
 	//--
 
 private:
+	// Helper function to split long paths into multiple lines
+	string splitPathIntoLines(const string& path, int segmentsPerLine = 4, int maxCharsPerLine = 40) {
+		vector<string> segments = ofSplitString(path, "/");
+		string result = "";
+		string currentLine = "";
+		int count = 0;
+		
+		for (size_t i = 0; i < segments.size(); i++) {
+			string segmentToAdd = (i > 0 ? "/" : "") + segments[i];
+			
+			// Check if adding this segment would exceed character limit or segment limit
+			bool exceedsChars = (currentLine.length() + segmentToAdd.length()) > maxCharsPerLine && !currentLine.empty();
+			bool exceedsSegments = (count == segmentsPerLine);
+			
+			// Add newline if we exceed either limit (but not at the end)
+			if ((exceedsChars || exceedsSegments) && i < segments.size()) {
+				result += currentLine + "/\n/";
+				currentLine = segments[i]; // Start new line
+				count = 1;
+			} else {
+				currentLine += segmentToAdd;
+				count++;
+			}
+		}
+		
+		// Add remaining content
+		if (!currentLine.empty()) {
+			result += currentLine;
+		}
+		
+		return result;
+	}
+
 	void doSave(bool bRefreshFiles = true) {
 		// ofLogNotice("SurfingPresetsLite") << "doSave()";
 
@@ -768,8 +807,8 @@ private:
 					std::string nTo = fileBaseNames[index];
 					ofFile f;
 
-					nTo = path_Kit.get() + "\\" + nTo + ".json";
-					nFrom = path_Kit.get() + "\\" + nFrom + ".json";
+					nTo = ofFilePath::join(path_Kit.get(), (nTo + ".json"));
+					nFrom = ofFilePath::join(path_Kit.get(),(nFrom + ".json"));
 
 					bool bf = f.open(nTo);
 					bool bt = f.renameTo(nFrom, true, true);
@@ -825,7 +864,7 @@ protected:
 public:
 	std::string getPresetPath() const {
 		std::string path;
-		path = ofFilePath::join(path_Kit.get(), fileBaseName + ".json");
+		path = ofFilePath::join(path_Kit.get(), (fileBaseName + ".json"));
 
 		return path;
 	}

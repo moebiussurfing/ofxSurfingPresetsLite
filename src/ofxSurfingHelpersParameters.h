@@ -178,7 +178,7 @@ static inline void doReset(ofParameterGroup & paramsGroup/*, bool bSilent = fals
 
 //--------------------------------------------------------------
 static inline void doResetSetInit(ofParameterGroup & paramsGroup) {
-	ofLogNotice("ofxSurfing") << "doResetSetInit():" << paramsGroup.getName();
+	ofLogNotice("ofxSurfing") << "doResetSetInit(): " << paramsGroup.getName();
 
 	for (auto ap : paramsGroup) {
 		// Param Group
