@@ -42,7 +42,7 @@ static inline void doRandomize(ofParameterGroup & paramsGroup/*, bool bSilent = 
 					pr.setWithoutEventNotifications(v);
 				else
 					pr.set(v);
-				ofLogNotice("ofxSurfing") << pr.getName() << ":" << pr.get();
+				ofLogVerbose("ofxSurfing") << pr.getName() << ":" << pr.get();
 				continue;
 			}
 
@@ -55,7 +55,7 @@ static inline void doRandomize(ofParameterGroup & paramsGroup/*, bool bSilent = 
 					pr.setWithoutEventNotifications(v);
 				else
 					pr.set(v);
-				ofLogNotice("ofxSurfing") << pr.getName() << ":" << pr.get();
+				ofLogVerbose("ofxSurfing") << pr.getName() << ":" << pr.get();
 				continue;
 			}
 
@@ -68,7 +68,7 @@ static inline void doRandomize(ofParameterGroup & paramsGroup/*, bool bSilent = 
 					pr.setWithoutEventNotifications(b);
 				else
 					pr.set(b);
-				ofLogNotice("ofxSurfing") << pr.getName() << ":" << pr.get();
+				ofLogVerbose("ofxSurfing") << pr.getName() << ":" << pr.get();
 				continue;
 			}
 
@@ -85,7 +85,7 @@ static inline void doRandomize(ofParameterGroup & paramsGroup/*, bool bSilent = 
 					pr.setWithoutEventNotifications(c);
 				else
 					pr.set(c);
-				ofLogNotice("ofxSurfing") << pr.getName() << ":" << pr.get();
+				ofLogVerbose("ofxSurfing") << pr.getName() << ":" << pr.get();
 				continue;
 			}
 
@@ -125,7 +125,7 @@ static inline void doReset(ofParameterGroup & paramsGroup/*, bool bSilent = fals
 					pr.setWithoutEventNotifications(pr.getMin());
 				else
 					pr.set(pr.getMin());
-				ofLogNotice("ofxSurfing") << pr.getName() << ":" << pr.get();
+				ofLogVerbose("ofxSurfing") << pr.getName() << ":" << pr.get();
 				continue;
 			}
 
@@ -137,7 +137,7 @@ static inline void doReset(ofParameterGroup & paramsGroup/*, bool bSilent = fals
 					pr.setWithoutEventNotifications(pr.getMin());
 				else
 					pr.set(pr.getMin());
-				ofLogNotice("ofxSurfing") << pr.getName() << ":" << pr.get();
+				ofLogVerbose("ofxSurfing") << pr.getName() << ":" << pr.get();
 				continue;
 			}
 
@@ -150,7 +150,7 @@ static inline void doReset(ofParameterGroup & paramsGroup/*, bool bSilent = fals
 					pr.setWithoutEventNotifications(b);
 				else
 					pr.set(b);
-				ofLogNotice("ofxSurfing") << pr.getName() << ":" << pr.get();
+				ofLogVerbose("ofxSurfing") << pr.getName() << ":" << pr.get();
 				continue;
 			}
 
@@ -199,7 +199,7 @@ static inline void doResetSetInit(ofParameterGroup & paramsGroup) {
 				//pr.setInit(pr.get());
 				auto v = pr.get();
 				pr.setInit(v);
-				ofLogNotice("ofxSurfing") << pr.getName() << ":" << pr.get();
+				ofLogVerbose("ofxSurfing") << pr.getName() << ":" << pr.get();
 				continue;
 			}
 
@@ -210,7 +210,7 @@ static inline void doResetSetInit(ofParameterGroup & paramsGroup) {
 				//pr.setInit(pr.get());
 				auto v = pr.get();
 				pr.setInit(v);
-				ofLogNotice("ofxSurfing") << pr.getName() << ":" << pr.get();
+				ofLogVerbose("ofxSurfing") << pr.getName() << ":" << pr.get();
 				continue;
 			}
 
@@ -221,7 +221,7 @@ static inline void doResetSetInit(ofParameterGroup & paramsGroup) {
 				//pr.setInit(pr.get());
 				auto v = pr.get();
 				pr.setInit(v);
-				ofLogNotice("ofxSurfing") << pr.getName() << ":" << pr.get();
+				ofLogVerbose("ofxSurfing") << pr.getName() << ":" << pr.get();
 				continue;
 			}
 
@@ -261,7 +261,7 @@ static inline void doResetInit(ofParameterGroup & paramsGroup) {
 				ofParameter<float> pr = p.cast<float>();
 				//pr.getInit();
 				pr.reInit();
-				ofLogNotice("ofxSurfing") << pr.getName() << ":" << pr.get();
+				ofLogVerbose("ofxSurfing") << pr.getName() << ":" << pr.get();
 				continue;
 			}
 
@@ -270,7 +270,7 @@ static inline void doResetInit(ofParameterGroup & paramsGroup) {
 				ofParameter<int> pr = p.cast<int>();
 				//pr.getInit();
 				pr.reInit();
-				ofLogNotice("ofxSurfing") << pr.getName() << ":" << pr.get();
+				ofLogVerbose("ofxSurfing") << pr.getName() << ":" << pr.get();
 				continue;
 			}
 
@@ -279,7 +279,7 @@ static inline void doResetInit(ofParameterGroup & paramsGroup) {
 				ofParameter<bool> pr = p.cast<bool>();
 				//pr.getInit();
 				pr.reInit();
-				ofLogNotice("ofxSurfing") << pr.getName() << ":" << pr.get();
+				ofLogVerbose("ofxSurfing") << pr.getName() << ":" << pr.get();
 				continue;
 			}
 

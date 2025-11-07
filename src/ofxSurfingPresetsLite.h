@@ -151,7 +151,7 @@ protected:
 
 public:
 	ofParameter<void> vReset { "Reset" };
-	ofParameter<void> vResetSetInit { "Reset Set" };
+	ofParameter<void> vResetSetInit { "Set Reset" };
 	ofParameter<void> vRandom { "Random" };
 
 	ofParameter<int> index { "Index", -1, -1, -1 };
@@ -224,9 +224,11 @@ private:
 		ofLogNotice("SurfingPresetsLite") << "setupFilesManager()";
 
 		filesManager.setName("Kit_Path");
-		filesManager.setup(true); // to hide export trigger in case you dont need it
+		filesManager.setDisableInternalJsonSettings(true); // handle path serialization ourselves
+		filesManager.setDisableExportTrigger(true); // to hide export trigger in case you dont need it
+		filesManager.setup();
 		if (filesManager.getPathFolder() == "")
-			filesManager.setPathFolder(ofToDataPath("\\Kit2\\")); //TODO:
+			filesManager.setPathFolder(ofToDataPath("Kits", true)); //TODO:
 		path_Kit.set(filesManager.getPathFolder());
 		path_Kit.setSerializable(false); // hide from serialization bc we use surfingFilesManager to store the path
 		paramsKit.add(filesManager.params);
@@ -257,30 +259,30 @@ private:
 		paramsBrowse.add(vNext);
 		paramsBrowse.add(vPrevious);
 
-		paramsManager.add(vSave);
 		paramsManager.add(vLoad);
 		paramsManager.add(vNew);
 		paramsManager.add(vDelete);
 		paramsManager.add(vResetSetInit);
 		paramsManager.add(vReset);
 		paramsManager.add(vRandom);
-		paramsManager.add(bAutoSave);
-
+		
 		paramsKit.add(vPopulateKit);
 		paramsKit.add(vPopulateRandomKit);
 		paramsKit.add(vClearKit);
 		paramsKit.add(vScanKit);
-
+		
 		// Setup files manager
 		setupFilesManager();
-
+		
 		paramsAdvanced.add(bCycled);
 		paramsAdvanced.add(numPresetsForPopulating);
 		paramsInternal.add(bGui); // only for serializing settings. could be hidden of the ui
 		paramsAdvanced.add(paramsInternal);
-
+		
 		//parameters.add(bGuiParams); // exposed also on guiManager
 		parameters.add(paramsBrowse);
+		parameters.add(vSave);
+		parameters.add(bAutoSave);
 		parameters.add(paramsManager);
 		parameters.add(paramsKit);
 		parameters.add(paramsAdvanced);
@@ -383,7 +385,7 @@ private:
 		//TODO: run on refresh kit instead!
 		numPresetsForPopulating = ofClamp(numPresetsForPopulating.get(), 0, numPresetsForPopulating.getMax());
 		keyCommandsChars.clear();
-		for (size_t i = 0; i < numPresetsForPopulating; i++) {
+		for (size_t i = 0; i < numPresetsForPopulating.get(); i++) {
 			keyCommandsChars.push_back(pChars[i]);
 		}
 
@@ -470,14 +472,14 @@ public:
 
 private:
 	void doSave(bool bRefreshFiles = true) {
-		ofLogNotice("SurfingPresetsLite") << "doSave()";
+		// ofLogNotice("SurfingPresetsLite") << "doSave()";
 
 		// Here, fileBaseName is/must be already named and ready to be used here!
 
 		if (getNumFiles() == 0) fileBaseName = "00"; // prepare name for first preset
 
 		// Note that saves the previously settled file name when picking the index!
-		ofLogNotice("SurfingPresetsLite") << "doSave(" << bRefreshFiles << "): " << fileBaseName;
+		ofLogNotice("SurfingPresetsLite") << "doSave(" << ofToString(bRefreshFiles?"true":"false") << "): " << fileBaseName;
 
 		// Save preset
 		ofxSurfing::saveGroup(paramsPreset, getPresetPath());
@@ -485,13 +487,13 @@ private:
 		//--
 
 		if (bRefreshFiles) {
-			// scan files
+			// Scan files
 			doRefreshKitFiles();
 		}
 	}
 
 	void doLoad(int index_) {
-		ofLogNotice("SurfingPresetsLite") << "doLoad(" << index_ << ")";
+		ofLogVerbose("SurfingPresetsLite") << "doLoad(" << index_ << ")";
 
 		if (index_ != index) {
 			index_PRE = index_;
@@ -543,8 +545,7 @@ private:
 		name = group.getName();
 
 		setNameUI(name); //rename bGui param
-		//parameters.setName(ofToString("PRESETS ") + name);
-		parameters.setName(ofToString("PRESET ") + name);
+		parameters.setName(ofToString("PRESET_") + name);//used for gui panel title
 
 		pathSettings = name + ofToString("_Presets.json");
 
@@ -844,7 +845,7 @@ protected:
 	}
 
 	bool doReorganizeKitFiles() {
-		ofLogNotice("SurfingPresetsLite") << "doReorganizeKitFiles()";
+		// ofLogNotice("SurfingPresetsLite") << "doReorganizeKitFiles()";
 
 		bool bSomeFileRequiredRename = false;
 
@@ -905,8 +906,9 @@ protected:
 
 protected:
 	void doListFiles() {
+		ofLogNotice("SurfingPresetsLite") << "doListFiles()";
 		for (auto f : dir) {
-			ofLogNotice("SurfingPresetsLite") << "doListFiles(): " << f.getAbsolutePath();
+			ofLogNotice("SurfingPresetsLite") << "doListFiles(): getAbsolutePath: " << f.getAbsolutePath();
 		}
 	}
 	std::string getListFiles() const {

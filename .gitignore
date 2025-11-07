@@ -578,3 +578,6 @@ MigrationBackup/
 1_Example_Presets_ofxGui/1_Example_Presets_ofxGui.code-workspace
 1_Example_Presets_ofxGui/of.entitlements
 1_Example_Presets_ofxGui/bin/data/.gitkeep
+1_Example_Presets_ofxGui/.vscode/browse.db
+1_Example_Presets_ofxGui/.vscode/browse.db-shm
+1_Example_Presets_ofxGui/.vscode/browse.db-wal
