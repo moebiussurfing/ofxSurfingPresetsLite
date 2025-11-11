@@ -57,7 +57,7 @@ public:
 	SurfingPresetsLite() {
 		ofSetLogLevel("SurfingPresetsLite", OF_LOG_NOTICE);
 		
-		ofLogNotice("SurfingPresetsLite") << "Constructor()";
+		ofLogVerbose("SurfingPresetsLite") << "Constructor()";
 
 		addListeners();
 
@@ -66,7 +66,7 @@ public:
 	}
 
 	~SurfingPresetsLite() {
-		ofLogNotice("SurfingPresetsLite") << "Destructor()";
+		ofLogVerbose("SurfingPresetsLite") << "Destructor()";
 
 		removeListeners();
 
@@ -80,7 +80,7 @@ public:
 
 protected:
 	void addListeners() {
-		ofLogNotice("SurfingPresetsLite") << "addListeners()";
+		ofLogVerbose("SurfingPresetsLite") << "addListeners()";
 
 		ofAddListener(parameters.parameterChangedE(), this, &SurfingPresetsLite::Changed);
 		ofAddListener(ofEvents().update, this, &SurfingPresetsLite::update);
@@ -90,7 +90,7 @@ protected:
 	}
 
 	void removeListeners() {
-		ofLogNotice("SurfingPresetsLite") << "removeListeners()";
+		ofLogVerbose("SurfingPresetsLite") << "removeListeners()";
 
 		ofRemoveListener(parameters.parameterChangedE(), this, &SurfingPresetsLite::Changed);
 		ofRemoveListener(ofEvents().update, this, &SurfingPresetsLite::update);
@@ -1120,7 +1120,7 @@ protected:
 
 	//--------------------------------------------------------------
 	void addKeysListeners() {
-		ofLogNotice("SurfingPresetsLite") << "addKeysListeners()";
+		ofLogVerbose("SurfingPresetsLite") << "addKeysListeners()";
 
 		ofAddListener(ofEvents().keyPressed, this, &SurfingPresetsLite::keyPressed);
 		ofAddListener(ofEvents().keyReleased, this, &SurfingPresetsLite::keyReleased);
