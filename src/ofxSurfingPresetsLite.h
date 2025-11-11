@@ -243,7 +243,9 @@ private:
 			filesManager.setPathFolder(ofToDataPath("Kit-00", true));
 		path_Kit.set(filesManager.getPathFolder());
 		path_Kit.setSerializable(false); // hide from serialization bc we use surfingFilesManager to store the path
+		
 		paramsKit.add(filesManager.params);
+		
 		setupFilesManagerCallbacks();
 	}
 
@@ -278,14 +280,14 @@ private:
 		paramsManager.add(vReset);
 		paramsManager.add(vRandom);
 		
+		// Setup files manager. 
+		// This class is used to handle kit path: folder browsing and file listing.
+		setupFilesManager();
+		
 		paramsKit.add(vPopulateKit);
 		paramsKit.add(vPopulateRandomKit);
 		paramsKit.add(vClearKit);
 		paramsKit.add(vScanKit);
-		
-		// Setup files manager. 
-		// This class is used to handle kit path: folder browsing and file listing.
-		setupFilesManager();
 		
 		paramsAdvanced.add(bCycled);
 		paramsAdvanced.add(numPresetsForPopulating);
