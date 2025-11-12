@@ -812,6 +812,12 @@ public:
 		path = ofFilePath::join(path_Kit.get(), (fileBaseName + ".json"));
 		return path;
 	}
+	std::string getPresetName() const {
+		return fileBaseName;
+	}
+	std::string getPresetFileName() const {
+		return ofToString(fileBaseName + ".json");
+	}
 	int getNumPresets() const {
 		return index.getMax() + 1;
 	}
