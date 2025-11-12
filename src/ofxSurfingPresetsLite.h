@@ -8,7 +8,17 @@
 //--
 
 /*
-	TODO:
+
+	BUGS
+
+	check deleting some presets wrongly!
+		add backup kit button
+	saving a preset on exit?
+	in presets lite enter key breaks removing files! add modifier comand key
+
+	--
+
+	TODO
 
 	allow create folder.
 	select other folder, if has files, load first preset.
