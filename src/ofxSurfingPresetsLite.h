@@ -1,4 +1,3 @@
-
 #pragma once
 #include "ofMain.h"
 
@@ -56,7 +55,7 @@ class SurfingPresetsLite {
 public:
 	SurfingPresetsLite() {
 		ofSetLogLevel("SurfingPresetsLite", OF_LOG_NOTICE);
-		
+
 		ofLogVerbose("SurfingPresetsLite") << "Constructor()";
 
 		addListeners();
@@ -165,9 +164,9 @@ public:
 	ofParameter<int> index { "Index", -1, -1, -1 };
 
 	ofParameter<bool> bCycled { "Cycled", true };
-	
+
 	// Amount max presets allowed but only for populating functions and key commands
-	ofParameter<int> numPresetsForPopulating { "Num presets", 10, 2, 32 }; 
+	ofParameter<int> numPresetsForPopulating { "Num presets", 10, 2, 32 };
 
 public:
 	ofParameter<bool> bGui { "PRESETS", true };
@@ -204,11 +203,11 @@ protected:
 	ofParameter<bool> bAutoSave { "AutoSave", true }; // edit mode
 	ofParameter<bool> bKeys { "Keys", true };
 	ofParameter<bool> bHelp { "Help", true };
-	
+
 private:
 	SurfingFilesManager filesManager;
 	ofParameter<std::string> path_Kit;
-	
+
 	vector<char> keyCommandsChars; // available keys to listen on keys press
 
 private:
@@ -243,9 +242,9 @@ private:
 			filesManager.setPathFolder(ofToDataPath("Kit-00", true));
 		path_Kit.set(filesManager.getPathFolder());
 		path_Kit.setSerializable(false); // hide from serialization bc we use surfingFilesManager to store the path
-		
+
 		paramsKit.add(filesManager.params);
-		
+
 		setupFilesManagerCallbacks();
 	}
 
@@ -279,21 +278,21 @@ private:
 		paramsManager.add(vResetSetInit);
 		paramsManager.add(vReset);
 		paramsManager.add(vRandom);
-		
-		// Setup files manager. 
+
+		// Setup files manager.
 		// This class is used to handle kit path: folder browsing and file listing.
 		setupFilesManager();
-		
+
 		paramsKit.add(vPopulateKit);
 		paramsKit.add(vPopulateRandomKit);
 		paramsKit.add(vClearKit);
 		paramsKit.add(vScanKit);
-		
+
 		paramsAdvanced.add(bCycled);
 		paramsAdvanced.add(numPresetsForPopulating);
 		paramsInternal.add(bGui); // Only for serializing settings. could be hidden of the ui
 		paramsAdvanced.add(paramsInternal);
-		
+
 		//parameters.add(bGuiParams); // Exposed also on guiManager
 		parameters.add(paramsBrowse);
 		parameters.add(vSave);
@@ -359,15 +358,15 @@ private:
 		// Define some standard key strokes to trig presets
 		pChars.clear();
 		pChars = {
-			'0','1','2','3','4','5','6','7','8','9',
-			'q','w','e','r','t','y','u','i','o','p',
-			'a','s','d','f','g','h','j','k','l',
-			'z','x','c','v','b','n','m'
+			'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+			'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
+			'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l',
+			'z', 'x', 'c', 'v', 'b', 'n', 'm'
 		};
 		ofLogNotice("SurfingPresetsLite") << "pChars.size(): " << pChars.size();
 
 		// Prepare key commands vector according to numPresetsForPopulating
-		numPresetsForPopulating = ofClamp(numPresetsForPopulating.get(), 
+		numPresetsForPopulating = ofClamp(numPresetsForPopulating.get(),
 			0, numPresetsForPopulating.getMax());
 		keyCommandsChars.clear();
 		for (size_t i = 0; i < numPresetsForPopulating.get(); i++) {
@@ -456,13 +455,12 @@ public:
 	//--
 
 private:
-
 	void doSave(bool bRefreshFiles = true) {
 		// Note: Here, fileBaseName is or must be already named and ready to be used here!
 		if (getNumFiles() == 0) fileBaseName = "00"; // prepare name for first preset
 
 		// Note that saves the previously settled file name when picking the index!
-		ofLogNotice("SurfingPresetsLite") << "doSave(" << ofToString(bRefreshFiles?"true":"false") << "): " << fileBaseName;
+		ofLogNotice("SurfingPresetsLite") << "doSave(" << ofToString(bRefreshFiles ? "true" : "false") << "): " << fileBaseName;
 
 		// Save preset
 		ofxSurfing::saveGroup(paramsPreset, getPresetPath());
@@ -529,7 +527,7 @@ private:
 		name = group.getName();
 
 		setNameUI(name); //rename bGui param
-		parameters.setName(ofToString("PRESET_") + name);//used for gui panel title
+		parameters.setName(ofToString("PRESET_") + name); //used for gui panel title
 
 		pathSettings = name + ofToString("_Presets.json");
 
@@ -678,9 +676,9 @@ private:
 			// log the index/files changes from->to
 			if ((index_PRE < fileBaseNames.size() && index < fileBaseNames.size()) && (index_PRE < dir.size() && index < dir.size())) {
 				ofLogVerbose("SurfingPresetsLite: Names: ") << ofToString(fileBaseNames[index_PRE]) << " > "
-					<< ofToString(fileBaseNames[index]);
+															<< ofToString(fileBaseNames[index]);
 				ofLogNotice("SurfingPresetsLite: Filenames: ") << ofToString(dir[index_PRE].getFileName()) << " > "
-					<< ofToString(dir[index].getFileName());
+															   << ofToString(dir[index].getFileName());
 			}
 
 			//--
@@ -815,6 +813,10 @@ public:
 	std::string getPresetName() const {
 		return fileBaseName;
 	}
+	std::string getKitName() const {
+		string n = ofFilePath::getFileName(ofFilePath::removeTrailingSlash(path_Kit.get()));
+		return n;
+	}
 	std::string getPresetFileName() const {
 		return ofToString(fileBaseName + ".json");
 	}
@@ -835,7 +837,7 @@ protected:
 
 	bool doReorganizeKitFiles() {
 		ofLogNotice("SurfingPresetsLite") << "doReorganizeKitFiles() Found " << dir.size() << " files.";
-		
+
 		bool bSomeFileRequiredRename = false;
 		for (int i = 0; i < dir.size(); i++) {
 			std::string n = dir[i].getBaseName(); // current name
@@ -1100,7 +1102,7 @@ protected:
 
 		else {
 			for (size_t i = 0; i < numPresetsForPopulating; i++) {
-				if(i >= keyCommandsChars.size()) return;
+				if (i >= keyCommandsChars.size()) return;
 				if ((char)key == keyCommandsChars[i]) {
 					index.set(i);
 					return;
@@ -1185,35 +1187,40 @@ public:
 
 private:
 	// Helper function to split a long path into multiple lines to beautify help display
-	string splitPathIntoLines(const string& path, int segmentsPerLine = 4, int maxCharsPerLine = 40) {
-		vector<string> segments = ofSplitString(path, "/");
-		string result = "";
-		string currentLine = "";
-		int count = 0;
-		
+	string splitPathIntoLines(const string & path, int segmentsPerLine = 4, int maxCharsPerLine = 40) {
+		if (path.empty()) return string();
+
+		// Normalize path separators to forward slashes (cross-platform)
+		string normalizedPath = path;
+		ofStringReplace(normalizedPath, "\\", "/");
+
+		vector<string> segments = ofSplitString(normalizedPath, "/");
+		string result;
+		string currentLine;
+		int segCount = 0;
+
 		for (size_t i = 0; i < segments.size(); i++) {
 			string segmentToAdd = (i > 0 ? "/" : "") + segments[i];
-			
-			// Check if adding this segment would exceed character limit or segment limit
-			bool exceedsChars = (currentLine.length() + segmentToAdd.length()) > maxCharsPerLine && !currentLine.empty();
-			bool exceedsSegments = (count == segmentsPerLine);
-			
-			// Add newline if we exceed either limit (but not at the end)
-			if ((exceedsChars || exceedsSegments) && i < segments.size()) {
-				result += currentLine + "/\n/";
-				currentLine = segments[i]; // Start new line
-				count = 1;
+
+			bool exceedsChars = (!currentLine.empty() && (int)(currentLine.length() + segmentToAdd.length()) > maxCharsPerLine);
+			bool exceedsSegments = (segCount >= segmentsPerLine);
+
+			// Add newline if we exceed either limit (but not at the very end)
+			if ((exceedsChars || exceedsSegments) && i < segments.size() - 1) {
+				result += currentLine + "/\n";
+				currentLine = segments[i]; // Start new line without leading slash
+				segCount = 1;
 			} else {
 				currentLine += segmentToAdd;
-				count++;
+				segCount++;
 			}
 		}
-		
+
 		// Add remaining content
 		if (!currentLine.empty()) {
 			result += currentLine;
 		}
-		
+
 		return result;
 	}
 };
