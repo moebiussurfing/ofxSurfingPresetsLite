@@ -437,13 +437,13 @@ public:
 		} else {
 			sHelp += "KEYS DISABLED\n";
 		}
-		sHelp += "\n";
+//		sHelp += "\n";
 		sHelp += "Preset      ";
 		sHelp += ofToString(getPresetIndex()) + " / " + ofToString(getPresetIndexLast()) + "\n";
-		sHelp += "\n";
+//		sHelp += "\n";
 		sHelp += "File        ";
 		if (index < dir.size()) sHelp += getPresetFileName() + "\n";
-		sHelp += "\n";
+//		sHelp += "\n";
 		sHelp += "Kit         ";
 		sHelp += getKitName() + "\n";
 		sHelp += "\n";
