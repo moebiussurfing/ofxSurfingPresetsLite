@@ -426,8 +426,8 @@ public:
 			sHelp += "BACKSPACE   Random\n";
 			sHelp += "+Ctrl       Reset\n";
 			sHelp += "\n";
-			sHelp += "RETURN      New preset\n";
-			sHelp += "+Ctrl       Populate\n";
+			sHelp += "n           New preset\n";
+			sHelp += "r           Populate\n";
 			sHelp += "            Random Kit\n";
 			sHelp += "\n";
 			sHelp += "< >         Browse\n";
@@ -438,16 +438,17 @@ public:
 			sHelp += "KEYS DISABLED\n";
 		}
 		sHelp += "\n";
-		sHelp += "Preset\n";
-		sHelp += ofToString(getPresetIndex()) + "/" + ofToString(getPresetIndexLast()) + "\n";
+		sHelp += "Preset      ";
+		sHelp += ofToString(getPresetIndex()) + " / " + ofToString(getPresetIndexLast()) + "\n";
 		sHelp += "\n";
-		sHelp += "Kit Path: \n";
-		sHelp += splitPathIntoLines(path_Kit.get(), 3) + "\n";
+		sHelp += "File        ";
+		if (index < dir.size()) sHelp += getPresetFileName() + "\n";
 		sHelp += "\n";
 		sHelp += "Kit         ";
-		sHelp += ofFilePath::getFileName(ofFilePath::removeTrailingSlash(path_Kit.get())) + "\n";
-		sHelp += "File        ";
-		if (index < dir.size()) sHelp += ofFilePath::getFileName(dir[index].path()) + "\n";
+		sHelp += getKitName() + "\n";
+		sHelp += "\n";
+		sHelp += "Kit Path: \n";
+		sHelp += getPathSplitIntoLines(getKitPath()) + "\n";
 		sHelp += "\n";
 		sHelp += "Files: \n";
 		if (dir.size() > 0) sHelp += ofToString(getListFiles()) + "\n";
@@ -815,6 +816,9 @@ protected:
 	//--
 
 public:
+	std::string getKitPath() const {
+		return path_Kit.get();
+	}
 	std::string getPresetPath() const {
 		std::string path;
 		path = ofFilePath::join(path_Kit.get(), (fileBaseName + ".json"));
@@ -1074,12 +1078,14 @@ protected:
 		}
 #endif
 
-		if (key == OF_KEY_RETURN && !bModKeyControl) {
+//		if (key == OF_KEY_RETURN && !bModKeyControl) {
+		if (key == 'n' && !bModKeyControl) {
 			doNewPreset();
 			return;
 		}
 
-		if (key == OF_KEY_RETURN && bModKeyControl) {
+//		if (key == OF_KEY_RETURN && bModKeyControl) {
+		if (key == 'r' && !bModKeyControl) {
 			doPopulateRandomKit();
 			return;
 		}
@@ -1197,7 +1203,7 @@ public:
 
 private:
 	// Helper function to split a long path into multiple lines to beautify help display
-	string splitPathIntoLines(const string & path, int segmentsPerLine = 4, int maxCharsPerLine = 40) {
+	string getPathSplitIntoLines(const string & path, int segmentsPerLine = 3, int maxCharsPerLine = 40) {
 		if (path.empty()) return string();
 
 		// Normalize path separators to forward slashes (cross-platform)
