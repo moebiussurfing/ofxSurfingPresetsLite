@@ -615,7 +615,7 @@ public:
 private:
 	void Changed(ofAbstractParameter & e) {
 		std::string name = e.getName();
-		ofLogNotice("SurfingPresetsLite") << "Changed: " << name << ": " << e;
+		ofLogNotice("SurfingPresetsLite") << "Changed: " << name;
 
 		bFlagBuildHelp = true; // update help info when any parameter changes
 
