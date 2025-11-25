@@ -435,15 +435,13 @@ public:
 			sHelp += "UP/DOWN     Row\n";
 #endif
 		} else {
+			sHelp += "\n";
 			sHelp += "KEYS DISABLED\n";
 		}
-//		sHelp += "\n";
 		sHelp += "Preset      ";
 		sHelp += ofToString(getPresetIndex()) + " / " + ofToString(getPresetIndexLast()) + "\n";
-//		sHelp += "\n";
 		sHelp += "File        ";
 		if (index < dir.size()) sHelp += getPresetFileName() + "\n";
-//		sHelp += "\n";
 		sHelp += "Kit         ";
 		sHelp += getKitName() + "\n";
 		sHelp += "\n";
@@ -1078,13 +1076,13 @@ protected:
 		}
 #endif
 
-//		if (key == OF_KEY_RETURN && !bModKeyControl) {
+		//		if (key == OF_KEY_RETURN && !bModKeyControl) {
 		if (key == 'n' && !bModKeyControl) {
 			doNewPreset();
 			return;
 		}
 
-//		if (key == OF_KEY_RETURN && bModKeyControl) {
+		//		if (key == OF_KEY_RETURN && bModKeyControl) {
 		if (key == 'r' && !bModKeyControl) {
 			doPopulateRandomKit();
 			return;
