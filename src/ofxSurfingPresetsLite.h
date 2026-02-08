@@ -211,6 +211,7 @@ protected:
 	ofParameter<void> vPopulateRandomKit { "Populate Random" };
 
 	ofParameter<bool> bAutoSave { "AutoSave", true }; // edit mode
+	ofParameter<bool> bAutoLoad { "AutoLoad", true }; // edit mode
 	ofParameter<bool> bKeys { "Keys", true };
 	ofParameter<bool> bHelp { "Help", true };
 
@@ -307,6 +308,7 @@ private:
 		parameters.add(paramsBrowse);
 		parameters.add(vSave);
 		parameters.add(bAutoSave);
+		parameters.add(bAutoLoad);
 		parameters.add(paramsManager);
 		parameters.add(paramsKit);
 		parameters.add(paramsAdvanced);
@@ -712,14 +714,15 @@ private:
 				//--
 
 				// 1.2 Load
+				if(bAutoLoad){
+					ofLogNotice("SurfingPresetsLite") << index.getName() + ": " << ofToString(index);
 
-				ofLogNotice("SurfingPresetsLite") << index.getName() + ": " << ofToString(index);
-
-				if (index < fileBaseNames.size()) {
-					fileBaseName = fileBaseNames[index];
-					doLoad();
-				} else {
-					ofLogError("SurfingPresetsLite") << "File out of range";
+					if (index < fileBaseNames.size()) {
+						fileBaseName = fileBaseNames[index];
+						doLoad();
+					} else {
+						ofLogError("SurfingPresetsLite") << "File out of range";
+					}
 				}
 
 				index_PRE = index;
